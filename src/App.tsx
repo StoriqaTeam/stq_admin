@@ -3,8 +3,6 @@ import style from 'styled-components';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
 
-import Test from './pages/Test';
-
 const Wrapper = style.div`
   display: flex;
   justify-content: center;
@@ -18,9 +16,7 @@ const client = new ApolloClient({
 
 const App = () => (
   <ApolloProvider client={client}>
-    <Wrapper>
-      <Test />
-    </Wrapper>
+    <Wrapper>hi</Wrapper>
   </ApolloProvider>
 );
 

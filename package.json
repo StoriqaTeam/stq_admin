@@ -36,6 +36,7 @@
     "webpack-dev-server": "3.1.8"
   },
   "scripts": {
-    "dev": "yarn webpack-dev-server --mode development --config './config/webpack.config.js' --watch --host 127.0.0.1"
+    "dev": "yarn webpack-dev-server --mode development --config './config/webpack.config.js' --watch --host 127.0.0.1",
+    "build": "rm -rf dist && yarn webpack --config ./config/webpack.config.js --mode production"
   }
 }
