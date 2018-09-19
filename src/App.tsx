@@ -1,14 +1,8 @@
 import * as React from 'react';
-import style from 'styled-components';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
 
-const Wrapper = style.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-`;
+import styles from './App.scss';
 
 const client = new ApolloClient({
   uri: 'https://nightly.stq.cloud/graphql',
@@ -16,7 +10,7 @@ const client = new ApolloClient({
 
 const App = () => (
   <ApolloProvider client={client}>
-    <Wrapper>hi</Wrapper>
+    <div className={styles.container}>hi</div>
   </ApolloProvider>
 );
 
