@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -22,6 +23,24 @@ module.exports = {
         test: /\.mjs$/,
         use: [],
       },
+      {
+        test: /\.scss$/,
+        exclude: /node_modules/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true,
+                modules: true,
+                localIdentName: '[local]___[hash:base64:5]',
+              },
+            },
+            'sass-loader',
+          ],
+        }),
+      },
     ],
   },
   devServer: {
@@ -32,6 +51,7 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   plugins: [
+    new ExtractTextPlugin({ filename: 'styles.css' }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
