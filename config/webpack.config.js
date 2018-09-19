@@ -44,6 +44,8 @@ module.exports = {
     ],
   },
   devServer: {
+    historyApiFallback: true,
+    publicPath: '/',
     contentBase: path.join(__dirname, '../dist'),
     port: 9000,
     https: false,
