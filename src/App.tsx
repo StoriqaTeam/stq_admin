@@ -10,7 +10,7 @@ const client = new ApolloClient({
 
 const App = () => (
   <ApolloProvider client={client}>
-    <div className={styles.App}>hi</div>
+    <div className={styles.container}>hi</div>
   </ApolloProvider>
 );
 
