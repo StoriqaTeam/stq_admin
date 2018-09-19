@@ -2,7 +2,6 @@ import * as React from 'react';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
-import * as axios from 'axios';
 
 import Entry from './components/Entry';
 import Login from './pages/Login';
