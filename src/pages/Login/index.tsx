@@ -3,6 +3,8 @@ import { Form, Input, Button, Spin, Alert } from 'antd';
 import gql from 'graphql-tag';
 import { Mutation } from 'react-apollo';
 
+import { FormComponentProps } from 'antd/lib/form'; // tslint:disable-line
+
 import {
   LoginMutation,
   LoginMutationVariables,
@@ -18,7 +20,9 @@ const LOGIN_MUTATION = gql`
   }
 `;
 
-class LoginForm extends React.PureComponent {
+interface Props extends FormComponentProps {}
+
+class LoginForm extends React.PureComponent<Props> {
   render() {
     const { getFieldDecorator } = this.props.form;
     return (
@@ -26,7 +30,6 @@ class LoginForm extends React.PureComponent {
         mutation={LOGIN_MUTATION}
       >
         {(getJWTByEmail, { data, loading, error }) => {
-          console.log({ data, loading, error });
           return (
             <div className={styles.container}>
               {error && (
@@ -44,16 +47,21 @@ class LoginForm extends React.PureComponent {
                     const {
                       login,
                       password,
-                    } = this.props.form.getFieldsValue();
-                    getJWTByEmail({
-                      variables: {
-                        input: {
-                          clientMutationId: '',
-                          email: login,
-                          password,
+                    } = this.props.form.getFieldsValue() as {
+                      login?: string;
+                      password?: string;
+                    };
+                    if (login && password) {
+                      getJWTByEmail({
+                        variables: {
+                          input: {
+                            clientMutationId: '',
+                            email: login,
+                            password,
+                          },
                         },
-                      },
-                    });
+                      });
+                    }
                   }}
                 >
                   <Form.Item>
