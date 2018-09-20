@@ -3,6 +3,9 @@
 /.vscode
 /dist
 
+schema.json
+**/__generated__/*
+
 /yarn-error.log
 
 **/.DS_Store

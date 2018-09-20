@@ -3,10 +3,13 @@ import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import { Redirect, Switch, Route, Link } from 'react-router-dom';
 
+import { EntryMeQuery } from './__generated__/EntryMeQuery';
+
 const ME = gql`
-  {
+  query EntryMeQuery {
     me {
       id
+      rawId
     }
   }
 `;
@@ -14,10 +17,8 @@ const ME = gql`
 class Entry extends React.PureComponent<{}> {
   render() {
     return (
-      <Query query={ME} fetchPolicy="network-only">
+      <Query<EntryMeQuery> query={ME} fetchPolicy="network-only">
         {({ loading, error, data }) => {
-          console.log({ loading, error, data });
-
           if (loading) {
             return <div>loading</div>;
           }
@@ -26,7 +27,6 @@ class Entry extends React.PureComponent<{}> {
             return (
               <Switch>
                 <Route path="/" exact component={() => <div>main page</div>} />
-                <Route path="/s" component={() => <div>other page</div>} />
               </Switch>
             );
           } else {
