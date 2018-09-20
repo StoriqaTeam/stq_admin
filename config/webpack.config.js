@@ -41,6 +41,20 @@ module.exports = {
           ],
         }),
       },
+      {
+        test: /antd.css$/,
+        use: ExtractTextPlugin.extract({
+          use: [
+            {
+              loader: 'css-loader',
+              query: {
+                modules: true,
+                localIdentName: '[local]',
+              },
+            },
+          ],
+        }),
+      },
     ],
   },
   devServer: {

@@ -9,7 +9,6 @@ const ME = gql`
   query EntryMeQuery {
     me {
       id
-      rawId
     }
   }
 `;

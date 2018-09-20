@@ -6,8 +6,6 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import Entry from './components/Entry';
 import Login from './pages/Login';
 
-import styles from './App.scss';
-
 const client = new ApolloClient({
   uri: 'https://nightly.stq.cloud/graphql',
   headers: {},

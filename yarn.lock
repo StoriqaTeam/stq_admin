@@ -850,6 +850,10 @@
     "@types/glob" "*"
     fast-glob "^2.0.2"
 
+"@types/graphql@^14.0.0":
+  version "14.0.0"
+  resolved "https://registry.yarnpkg.com/@types/graphql/-/graphql-14.0.0.tgz#ecbe4d794c854a285411bea3dce83ab193397ad0"
+
 "@types/history@*":
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.0.tgz#2fac51050c68f7d6f96c5aafc631132522f4aa3f"
