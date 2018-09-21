@@ -8,7 +8,9 @@ import Login from './pages/Login';
 
 const client = new ApolloClient({
   uri: 'https://nightly.stq.cloud/graphql',
-  headers: {},
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+  },
 });
 
 const App = () => (
