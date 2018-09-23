@@ -41,7 +41,6 @@ class LoginForm extends React.PureComponent<Props> {
     return (
       <Query<LoginMe> query={LOGIN_ME} fetchPolicy="network-only">
         {({ loading: qLoading, data: qData, error: qError, client }) => {
-          console.log({ qLoading, qData, qError });
           return qData && qData.me ? (
             <Redirect to="/" />
           ) : (
@@ -49,8 +48,6 @@ class LoginForm extends React.PureComponent<Props> {
               mutation={LOGIN_MUTATION}
             >
               {(getJWTByEmail, { data, loading, error }) => {
-                console.log({ data, loading, error });
-
                 let validationErrors: { [k: string]: string } = {};
                 if (error) {
                   validationErrors = extractValidationErrorsFromGraphQLError(

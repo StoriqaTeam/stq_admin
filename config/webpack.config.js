@@ -57,6 +57,7 @@ module.exports = {
       },
     ],
   },
+  /* todo: extract `devServer` block to dev.config */
   devServer: {
     historyApiFallback: true,
     publicPath: '/',
