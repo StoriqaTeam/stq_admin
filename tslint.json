@@ -38,7 +38,7 @@
         "multiline": {
           "objects": "always",
           "arrays": "always",
-          "functions": "never",
+          "functions": "ignore",
           "typeLiterals": "ignore"
         },
         "esSpecCompliant": true
@@ -56,6 +56,8 @@
     ],
     // tslint-react
     "jsx-no-lambda": false,
-    "jsx-no-multiline-js": false
+    "jsx-no-multiline-js": false,
+    "jsx-curly-spacing": false,
+    "jsx-boolean-value": false
   }
 }

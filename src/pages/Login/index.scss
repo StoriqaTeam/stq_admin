@@ -1,0 +1,12 @@
+.container {
+  display: flex;
+  justify-content: center;
+  padding-top: 200px;
+}
+
+.banner {
+  position: absolute !important;
+  top: 10px;
+  left: 20px;
+  right: 20px;
+}

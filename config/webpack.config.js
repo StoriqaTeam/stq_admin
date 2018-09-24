@@ -41,9 +41,26 @@ module.exports = {
           ],
         }),
       },
+      {
+        test: /antd.css$/,
+        use: ExtractTextPlugin.extract({
+          use: [
+            {
+              loader: 'css-loader',
+              query: {
+                modules: true,
+                localIdentName: '[local]',
+              },
+            },
+          ],
+        }),
+      },
     ],
   },
+  /* todo: extract `devServer` block to dev.config */
   devServer: {
+    historyApiFallback: true,
+    publicPath: '/',
     contentBase: path.join(__dirname, '../dist'),
     port: 9000,
     https: false,
