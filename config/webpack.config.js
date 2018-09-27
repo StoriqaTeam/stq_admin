@@ -42,7 +42,7 @@ module.exports = {
         }),
       },
       {
-        test: /antd.css$/,
+        test: /\.css$/,
         use: ExtractTextPlugin.extract({
           use: [
             {
