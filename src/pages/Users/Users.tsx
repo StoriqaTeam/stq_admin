@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
-import { Button, Checkbox } from 'antd';
+import { Button, Checkbox, Alert } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import {
   map,
@@ -15,6 +15,7 @@ import {
   append,
   reject,
   equals,
+  pathOr,
 } from 'ramda';
 
 import UsersTable from './Table';
@@ -71,6 +72,7 @@ interface StateType {
   hasNextPage: boolean;
   dataSource: IUser[];
   filters: UserFormFilterType;
+  error: Error | null;
 }
 
 const RECORDS_PER_PAGE = 25;
@@ -83,6 +85,7 @@ class Users extends React.Component<PropsType, StateType> {
     hasNextPage: false,
     dataSource: [],
     filters: {},
+    error: null,
   };
 
   columns: Array<ColumnProps<IUser>> = [];
@@ -168,6 +171,7 @@ class Users extends React.Component<PropsType, StateType> {
   }
 
   toggleBlockingStatus = (rawId: number, isBlocked: boolean) => () => {
+    this.setState({ error: null });
     if (!isBlocked) {
       this.setState({ isLoading: true });
       this.props.client
@@ -184,6 +188,9 @@ class Users extends React.Component<PropsType, StateType> {
             data.blockUser.rawId,
             data.blockUser.isBlocked,
           );
+        })
+        .catch(err => {
+          this.setState({ error: err });
         })
         .finally(() => {
           this.setState({ isLoading: false });
@@ -204,6 +211,9 @@ class Users extends React.Component<PropsType, StateType> {
             data.unblockUser.rawId,
             data.unblockUser.isBlocked,
           );
+        })
+        .catch(err => {
+          this.setState({ error: err });
         })
         .finally(() => {
           this.setState({ isLoading: false });
@@ -316,6 +326,7 @@ class Users extends React.Component<PropsType, StateType> {
     role: UserMicroserviceRole;
     add: boolean;
   }) => {
+    this.setState({ error: null });
     if (input.add) {
       this.props.client
         .mutate<AddRoleToUserMutation, AddRoleToUserMutationVariables>({
@@ -334,6 +345,9 @@ class Users extends React.Component<PropsType, StateType> {
           }
           const { userId, name } = data.addRoleToUserOnUsersMicroservice;
           this.addRoleToUser(userId, name);
+        })
+        .catch(err => {
+          this.setState({ error: err });
         });
     } else {
       this.props.client
@@ -356,6 +370,9 @@ class Users extends React.Component<PropsType, StateType> {
           }
           const { userId, name } = data.removeRoleFromUserOnUsersMicroservice;
           this.deleteRoleFromUser(userId, name);
+        })
+        .catch(err => {
+          this.setState({ error: err });
         });
     }
   };
@@ -363,6 +380,18 @@ class Users extends React.Component<PropsType, StateType> {
   render() {
     return (
       <React.Fragment>
+        {this.state.error && (
+          <Alert
+            type="error"
+            message={pathOr(
+              'Unknown error :(',
+              ['graphQLErrors', 0, 'data', 'details', 'status'],
+              this.state.error,
+            )}
+            className={styles.alert}
+            closable
+          />
+        )}
         <UsersTableFilterForm
           loading={this.state.isLoading}
           onApplyFilter={this.handleFiltering}
