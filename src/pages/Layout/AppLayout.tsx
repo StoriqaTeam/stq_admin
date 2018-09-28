@@ -32,6 +32,10 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
             <Icon type="user" />
             <span>Users</span>
           </Menu.Item>
+          <Menu.Item key="2">
+            <Icon type="shopping" />
+            <span>Stores</span>
+          </Menu.Item>
         </Menu>
       </Sider>
     );
