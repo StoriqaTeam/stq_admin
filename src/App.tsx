@@ -10,6 +10,7 @@ const client = new ApolloClient({
   uri: 'https://nightly.stq.cloud/graphql',
   headers: {
     Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+    Currency: 'STQ',
   },
 });
 

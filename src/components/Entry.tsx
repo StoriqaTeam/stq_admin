@@ -5,6 +5,7 @@ import { Redirect, Switch, Route, Link } from 'react-router-dom';
 
 import { AppLayout } from '../pages/Layout';
 import { Users } from '../pages/Users';
+import { Stores } from '../pages/Stores';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
 const ME = gql`
@@ -36,6 +37,7 @@ class Entry extends React.PureComponent<{}> {
                     )}
                   />
                   <Route path="/users" exact component={Users} />
+                  <Route path="/stores" exact component={Stores} />
                 </Switch>
               );
             } else {

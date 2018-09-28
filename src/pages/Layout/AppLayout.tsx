@@ -32,6 +32,10 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
             <Icon type="user" />
             <span>Users</span>
           </Menu.Item>
+          <Menu.Item key="2">
+            <Icon type="shopping" />
+            <span>Stores</span>
+          </Menu.Item>
         </Menu>
       </Sider>
     );
@@ -56,7 +60,7 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
               onClick={this.toggle}
             />
-            <h2>Choose your destiny</h2>
+            <h2>Storiqa admin panel</h2>
             <Button
               type="primary"
               shape="circle"
