@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Form, Input, Button, Spin, Checkbox, Radio } from 'antd';
+import { Form, Input, Button, Spin, Radio } from 'antd';
 import { FormComponentProps } from 'antd/lib/form'; // tslint:disable-line
 import { propOr, reject, isNil, isEmpty, anyPass } from 'ramda';
 
@@ -78,6 +78,6 @@ class FilterForm extends React.PureComponent<PropsType> {
   }
 }
 
-const WrapperForm = Form.create()(FilterForm);
+const WrappedForm = Form.create()(FilterForm);
 
-export default WrapperForm;
+export default WrappedForm;

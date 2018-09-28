@@ -12,6 +12,10 @@ import {
   over,
   whereEq,
   assoc,
+  reject,
+  isNil,
+  isEmpty,
+  anyPass,
 } from 'ramda';
 
 import StoresTable, { IStore } from './Table';
@@ -29,12 +33,17 @@ import {
   DraftStoreMutation,
   DraftStoreMutationVariables,
 } from './__generated__/DraftStoreMutation';
-import { Status } from '../../../__generated__/globalTypes';
+import {
+  Status,
+  SearchModeratorStoreInput,
+} from '../../../__generated__/globalTypes';
 import {
   STORES_LIST_QUERY,
   STORE_PUBLISH_MUTATION,
   STORE_DRAFT_MUTATION,
 } from './queries';
+import FilterForm, { StatusFilter } from './FilterForm';
+import * as styles from './Stores.scss';
 
 const RECORDS_PER_PAGE = 20;
 
@@ -49,6 +58,7 @@ interface StateType {
   isLoading: boolean;
   error: Error | null;
   hasNextPage: boolean;
+  searchTerms: SearchModeratorStoreInput;
 }
 
 class Stores extends React.Component<PropsType, StateType> {
@@ -59,6 +69,7 @@ class Stores extends React.Component<PropsType, StateType> {
     isLoading: false,
     error: null,
     hasNextPage: false,
+    searchTerms: {},
   };
 
   columns: Array<ColumnProps<IStore>> = [];
@@ -142,10 +153,11 @@ class Stores extends React.Component<PropsType, StateType> {
     this.props.client
       .query<StoresListQuery, StoresListQueryVariables>({
         query: STORES_LIST_QUERY,
+        fetchPolicy: 'network-only',
         variables: {
           first: RECORDS_PER_PAGE,
           after: this.state.after,
-          searchTerm: {},
+          searchTerm: this.state.searchTerms,
         },
       })
       .then(({ data }) => {
@@ -246,14 +258,50 @@ class Stores extends React.Component<PropsType, StateType> {
     }));
   };
 
+  getStatusFromFilter = (
+    filterStatus: StatusFilter | null | undefined,
+  ): Status | null => {
+    if (!filterStatus) {
+      return null;
+    }
+
+    switch (filterStatus) {
+      case StatusFilter.PUBLISHED:
+        return Status.PUBLISHED;
+      case StatusFilter.DRAFT:
+        return Status.DRAFT;
+      default:
+        return null;
+    }
+  };
+
   render() {
     return (
       <Spin spinning={this.state.isLoading}>
+        <FilterForm
+          onApplyFilter={data => {
+            this.setState(
+              {
+                after: null,
+                dataSource: [],
+                searchTerms: reject(anyPass([isNil, isEmpty]), {
+                  name: data.name || null,
+                  storeManagerEmail: data.email || null,
+                  state: this.getStatusFromFilter(data.status),
+                }),
+              },
+              () => {
+                this.loadMore();
+              },
+            );
+          }}
+        />
         <StoresTable
           columns={this.columns}
           dataSource={this.state.dataSource}
           rowKey={record => `${record.id}`}
           pagination={false}
+          rowClassName={() => styles.row}
           footer={() =>
             this.state.hasNextPage && (
               <Button

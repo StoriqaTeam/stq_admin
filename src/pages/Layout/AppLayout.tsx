@@ -60,7 +60,7 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
               onClick={this.toggle}
             />
-            <h2>Choose your destiny</h2>
+            <h2>Storiqa admin panel</h2>
             <Button
               type="primary"
               shape="circle"
