@@ -48,6 +48,7 @@ interface StateType {
   dataSource: IStore[];
   isLoading: boolean;
   error: Error | null;
+  hasNextPage: boolean;
 }
 
 class Stores extends React.Component<PropsType, StateType> {
@@ -57,6 +58,7 @@ class Stores extends React.Component<PropsType, StateType> {
     dataSource: [],
     isLoading: false,
     error: null,
+    hasNextPage: false,
   };
 
   columns: Array<ColumnProps<IStore>> = [];
@@ -136,26 +138,39 @@ class Stores extends React.Component<PropsType, StateType> {
   }
 
   loadMore = () => {
+    this.setState({ isLoading: true });
     this.props.client
       .query<StoresListQuery, StoresListQueryVariables>({
         query: STORES_LIST_QUERY,
         variables: {
-          first: this.state.first,
+          first: RECORDS_PER_PAGE,
           after: this.state.after,
           searchTerm: {},
         },
       })
       .then(({ data }) => {
+        const after = pathOr(
+          null,
+          ['me', 'admin', 'storesSearch', 'pageInfo', 'endCursor'],
+          data,
+        );
+        const hasNextPage = pathOr(
+          null,
+          ['me', 'admin', 'storesSearch', 'pageInfo', 'hasNextPage'],
+          data,
+        );
         const dsChunk = this.prepareDataSource(data);
         this.setState(prevState => ({
           dataSource: concat(prevState.dataSource, dsChunk),
+          after,
+          hasNextPage,
         }));
       })
       .catch(err => {
-        // console.log(err);
+        this.setState({ error: err });
       })
       .finally(() => {
-        //
+        this.setState({ isLoading: false });
       });
   };
 
@@ -239,6 +254,18 @@ class Stores extends React.Component<PropsType, StateType> {
           dataSource={this.state.dataSource}
           rowKey={record => `${record.id}`}
           pagination={false}
+          footer={() =>
+            this.state.hasNextPage && (
+              <Button
+                block
+                type="primary"
+                loading={this.state.isLoading}
+                onClick={this.loadMore}
+              >
+                Load more
+              </Button>
+            )
+          }
         />
       </Spin>
     );
