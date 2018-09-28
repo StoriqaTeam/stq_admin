@@ -82,6 +82,14 @@ class Stores extends React.Component<PropsType, StateType> {
         key: 'name',
         title: 'Name',
         dataIndex: 'name',
+        render: (_, record) => (
+          <a
+            href={`https://nightly.stq.cloud/store/${record.id}`}
+            target="_blank"
+          >
+            {record.name}
+          </a>
+        ),
       },
       {
         key: 'ownerEmail',
