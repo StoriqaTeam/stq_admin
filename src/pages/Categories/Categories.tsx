@@ -117,7 +117,14 @@ class Categories extends React.Component<PropsType, StateType> {
     return (
       <div>
         <Row type="flex" justify="end" className={styles.addCategoryBtnWrapper}>
-          <Button type="primary">New category</Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              this.props.history.push('/categories/add');
+            }}
+          >
+            New category
+          </Button>
         </Row>
         <CategoriesTable
           columns={this.columns}

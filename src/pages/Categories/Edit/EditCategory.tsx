@@ -1,21 +1,13 @@
 import * as React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { Form, TreeSelect, Spin, Input, Row, Col, Button } from 'antd';
+import { Form } from 'antd';
 import { TreeNodeNormal } from 'antd/lib/tree-select/interface'; // tslint:disable-line
 import { FormComponentProps } from 'antd/lib/form'; // tslint:disable-line
-import {
-  pathOr,
-  map,
-  assoc,
-  reduce,
-  toPairs,
-  head,
-  last,
-  isEmpty,
-} from 'ramda';
+import { pathOr, map, assoc, reduce, toPairs, head, last } from 'ramda';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
 
+import CommonForm from '../Form';
 import {
   EDIT_CATEGORY_CATEGORIES_LIST_QUERY,
   UPDATE_CATEGORY_MUTATION,
@@ -167,37 +159,17 @@ class EditCategory extends React.PureComponent<PropsType, StateType> {
 
   render() {
     return (
-      <Spin spinning={this.state.isLoading}>
-        <Form layout="horizontal">
-          <Form.Item label="Parent category">
-            <TreeSelect
-              treeData={this.state.treeData}
-              treeDefaultExpandedKeys={[this.state.parentCategory]}
-              onSelect={(value: string) => {
-                this.setState({ parentCategory: value });
-              }}
-              value={this.state.parentCategory}
-            />
-          </Form.Item>
-          <Row gutter={24}>
-            {map(
-              lang => (
-                <Col span={8} key={lang}>
-                  <Form.Item label={lang} key={lang}>
-                    <Input
-                      value={this.state.translations[lang]}
-                      onChange={this.handleTranslationChange(lang as Language)}
-                    />
-                  </Form.Item>
-                </Col>
-              ),
-              Object.keys(Language),
-            )}
-          </Row>
-          <Form.Item />
-        </Form>
-        <Button onClick={this.handleSave}>Save</Button>
-      </Spin>
+      <CommonForm
+        isLoading={this.state.isLoading}
+        treeData={this.state.treeData}
+        parentCategory={this.state.parentCategory}
+        translations={this.state.translations}
+        onSave={this.handleSave}
+        onTranslationChange={this.handleTranslationChange}
+        onParentCategoryChange={(value: any) => {
+          this.setState({ parentCategory: value });
+        }}
+      />
     );
   }
 }
