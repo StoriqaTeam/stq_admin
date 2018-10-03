@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
+import { Button, Row } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { map, pathOr, ifElse, always, isEmpty } from 'ramda';
+import { withRouter, RouteComponentProps } from 'react-router';
 
 import CategoriesTable, { ICategory } from './Table';
 import { CATEGORIES_LIST_QUERY } from './queries';
@@ -13,7 +15,7 @@ import {
 } from './__generated__/CategoriesListQuery';
 import * as styles from './Categories.scss';
 
-interface PropsType {
+interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
 }
 
@@ -37,6 +39,34 @@ class Categories extends React.Component<PropsType, StateType> {
         title: 'Name',
         dataIndex: 'name',
       },
+      {
+        key: 'actions',
+        title: 'Actions',
+        dataIndex: 'actions',
+        width: 100,
+        render: (_, record) => (
+          <React.Fragment>
+            <Button
+              shape="circle"
+              icon="edit"
+              onClick={() => {
+                this.props.history.push(`/categories/${record.id}/edit`);
+              }}
+            />
+            {/* <Button
+              shape="circle"
+              icon="delete"
+              className={styles.deleteButton}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Do you want to delete this item?',
+                  content: `Deleting category "${record.name}"`,
+                });
+              }}
+            /> */}
+          </React.Fragment>
+        ),
+      },
     ];
   }
 
@@ -47,21 +77,21 @@ class Categories extends React.Component<PropsType, StateType> {
   prepareDatasource = (data: CategoriesListQuery): ICategory[] => {
     const lvl1Categories: ICategory[] = map(item => {
       return {
-        id: item.rawId,
+        id: item.id,
         name: pathOr('undefined', ['name', 0, 'text'], item),
         level: item.level,
         children: ifElse(
           isEmpty,
           always(null),
           map((itemLvl2: Category2Lvl) => ({
-            id: itemLvl2.rawId,
+            id: itemLvl2.id,
             name: pathOr('undefined', ['name', 0, 'text'], itemLvl2),
             level: itemLvl2.level,
             children: ifElse(
               isEmpty,
               always(null),
               map((itemLvl3: Category3Lvl) => ({
-                id: itemLvl3.rawId,
+                id: itemLvl3.id,
                 name: pathOr('undefined', ['name', 0, 'text'], itemLvl3),
                 level: itemLvl3.level,
               })),
@@ -86,6 +116,9 @@ class Categories extends React.Component<PropsType, StateType> {
   render() {
     return (
       <div>
+        <Row type="flex" justify="end" className={styles.addCategoryBtnWrapper}>
+          <Button type="primary">New category</Button>
+        </Row>
         <CategoriesTable
           columns={this.columns}
           dataSource={this.state.dataSource}
@@ -98,8 +131,10 @@ class Categories extends React.Component<PropsType, StateType> {
   }
 }
 
+const CategoriesWithRouter = withRouter(Categories);
+
 export default (props: PropsType) => (
   <ApolloConsumer>
-    {client => <Categories {...props} client={client} />}
+    {client => <CategoriesWithRouter {...props} client={client} />}
   </ApolloConsumer>
 );
