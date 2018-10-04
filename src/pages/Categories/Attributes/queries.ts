@@ -7,6 +7,10 @@ const CATEGORY_ATTRIBUTES_QUERY = gql`
         id
         rawId
         level
+        name {
+          lang
+          text
+        }
         getAttributes {
           id
           rawId

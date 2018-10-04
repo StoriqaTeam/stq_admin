@@ -46,6 +46,7 @@ interface StateType {
   categoryAttributesIds: number[];
   attributes: IAttribute[];
   categoryRawId: number;
+  categoryName: string;
 }
 
 class CategoryAttributes extends React.Component<PropsType, StateType> {
@@ -54,6 +55,7 @@ class CategoryAttributes extends React.Component<PropsType, StateType> {
     categoryAttributesIds: [],
     attributes: [],
     categoryRawId: -1,
+    categoryName: '',
   };
 
   componentDidMount() {
@@ -67,6 +69,7 @@ class CategoryAttributes extends React.Component<PropsType, StateType> {
         variables: {
           id: propOr('', 'id', this.props.match.params),
         },
+        fetchPolicy: 'network-only',
       })
       .then(({ data }) => {
         const currentCategory = data.node as CategoryNode;
@@ -84,6 +87,7 @@ class CategoryAttributes extends React.Component<PropsType, StateType> {
             currentCategory.getAttributes,
           ),
           categoryRawId: currentCategory.rawId,
+          categoryName: pathOr('', ['name', 0, 'text'], currentCategory),
         });
       });
   };
@@ -191,6 +195,7 @@ class CategoryAttributes extends React.Component<PropsType, StateType> {
           <Icon type="left" />
           Go back
         </Button>
+        <h2>{this.state.categoryName}</h2>
         <AttributesTable
           columns={[
             {
