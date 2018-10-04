@@ -13,7 +13,7 @@ import {
   reject,
   equals,
 } from 'ramda';
-import { Spin } from 'antd';
+import { Spin, Button, Icon } from 'antd';
 
 import AttributesTable, { IAttribute } from './Table';
 import {
@@ -181,6 +181,16 @@ class CategoryAttributes extends React.Component<PropsType, StateType> {
   render() {
     return (
       <Spin spinning={this.state.isLoading}>
+        <Button
+          className={styles.backButton}
+          size="small"
+          onClick={() => {
+            this.props.history.push('/categories');
+          }}
+        >
+          <Icon type="left" />
+          Go back
+        </Button>
         <AttributesTable
           columns={[
             {

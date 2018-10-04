@@ -4,6 +4,7 @@ import ApolloClient from 'apollo-client';
 import { TreeNodeNormal } from 'antd/lib/tree-select/interface'; // tslint:disable-line
 import { map, pathOr, assoc, head, last, toPairs } from 'ramda';
 import { withRouter, RouteComponentProps } from 'react-router';
+import { Button, Icon } from 'antd';
 
 import CommonForm from '../Form';
 import {
@@ -155,15 +156,26 @@ class AddCategory extends React.Component<PropsType, StateType> {
 
   render() {
     return (
-      <CommonForm
-        isLoading={this.state.isLoading}
-        treeData={this.state.treeData}
-        parentCategory={this.state.parentCategory}
-        translations={this.state.translations}
-        onTranslationChange={this.handleTranslationChange}
-        onParentCategoryChange={this.handleParentCategoryChange}
-        onSave={this.handleSave}
-      />
+      <div>
+        <Button
+          onClick={() => {
+            this.props.history.push('/categories');
+          }}
+          size="small"
+        >
+          <Icon type="left" />
+          Go back
+        </Button>
+        <CommonForm
+          isLoading={this.state.isLoading}
+          treeData={this.state.treeData}
+          parentCategory={this.state.parentCategory}
+          translations={this.state.translations}
+          onTranslationChange={this.handleTranslationChange}
+          onParentCategoryChange={this.handleParentCategoryChange}
+          onSave={this.handleSave}
+        />
+      </div>
     );
   }
 }

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
-import { Button, Row } from 'antd';
+import { Button, Row, Spin } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { map, pathOr, ifElse, always, isEmpty } from 'ramda';
 import { withRouter, RouteComponentProps } from 'react-router';
@@ -21,11 +21,13 @@ interface PropsType extends RouteComponentProps {
 
 interface StateType {
   dataSource: ICategory[];
+  isLoading: boolean;
 }
 
 class Categories extends React.Component<PropsType, StateType> {
   state: StateType = {
     dataSource: [],
+    isLoading: false,
   };
 
   columns: Array<ColumnProps<ICategory>> = [];
@@ -116,18 +118,22 @@ class Categories extends React.Component<PropsType, StateType> {
   };
 
   fetchCategories = () => {
+    this.setState({ isLoading: true });
     this.props.client
       .query<CategoriesListQuery>({
         query: CATEGORIES_LIST_QUERY,
       })
       .then(({ data }) => {
         this.setState({ dataSource: this.prepareDatasource(data) });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
       });
   };
 
   render() {
     return (
-      <div>
+      <Spin spinning={this.state.isLoading}>
         <Row type="flex" justify="end" className={styles.addCategoryBtnWrapper}>
           <Button
             type="primary"
@@ -145,7 +151,7 @@ class Categories extends React.Component<PropsType, StateType> {
           rowKey={record => `${record.id}`}
           rowClassName={() => styles.row}
         />
-      </div>
+      </Spin>
     );
   }
 }

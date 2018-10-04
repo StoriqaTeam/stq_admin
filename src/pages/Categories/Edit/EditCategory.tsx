@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { Form } from 'antd';
+import { Form, Button, Icon } from 'antd';
 import { TreeNodeNormal } from 'antd/lib/tree-select/interface'; // tslint:disable-line
 import { FormComponentProps } from 'antd/lib/form'; // tslint:disable-line
 import { pathOr, map, assoc, reduce, toPairs, head, last } from 'ramda';
@@ -159,17 +159,28 @@ class EditCategory extends React.PureComponent<PropsType, StateType> {
 
   render() {
     return (
-      <CommonForm
-        isLoading={this.state.isLoading}
-        treeData={this.state.treeData}
-        parentCategory={this.state.parentCategory}
-        translations={this.state.translations}
-        onSave={this.handleSave}
-        onTranslationChange={this.handleTranslationChange}
-        onParentCategoryChange={(value: any) => {
-          this.setState({ parentCategory: value });
-        }}
-      />
+      <div>
+        <Button
+          size="small"
+          onClick={() => {
+            this.props.history.push('/categories');
+          }}
+        >
+          <Icon type="left" />
+          Go back
+        </Button>
+        <CommonForm
+          isLoading={this.state.isLoading}
+          treeData={this.state.treeData}
+          parentCategory={this.state.parentCategory}
+          translations={this.state.translations}
+          onSave={this.handleSave}
+          onTranslationChange={this.handleTranslationChange}
+          onParentCategoryChange={(value: any) => {
+            this.setState({ parentCategory: value });
+          }}
+        />
+      </div>
     );
   }
 }
