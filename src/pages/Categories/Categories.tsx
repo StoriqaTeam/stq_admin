@@ -43,7 +43,7 @@ class Categories extends React.Component<PropsType, StateType> {
         key: 'actions',
         title: 'Actions',
         dataIndex: 'actions',
-        width: 100,
+        width: 150,
         render: (_, record) => (
           <React.Fragment>
             <Button
@@ -53,6 +53,18 @@ class Categories extends React.Component<PropsType, StateType> {
                 this.props.history.push(`/categories/${record.id}/edit`);
               }}
             />
+            {record.level === 3 && (
+              <Button
+                shape="circle"
+                icon="tag"
+                onClick={() => {
+                  this.props.history.push(
+                    `/categories/${record.id}/attributes`,
+                  );
+                }}
+                className={styles.attributesBtn}
+              />
+            )}
             {/* <Button
               shape="circle"
               icon="delete"

@@ -6,7 +6,12 @@ import { Redirect, Switch, Route, Link } from 'react-router-dom';
 import { AppLayout } from '../pages/Layout';
 import { Users } from '../pages/Users';
 import { Stores } from '../pages/Stores';
-import { Categories, EditCategory, AddCategory } from '../pages/Categories';
+import {
+  Categories,
+  EditCategory,
+  AddCategory,
+  CategoryAttributes,
+} from '../pages/Categories';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
 const ME = gql`
@@ -46,6 +51,11 @@ class Entry extends React.PureComponent<{}> {
                     component={EditCategory}
                   />
                   <Route path="/categories/add" exact component={AddCategory} />
+                  <Route
+                    path="/categories/:id/attributes"
+                    exact
+                    component={CategoryAttributes}
+                  />
                 </Switch>
               );
             } else {
