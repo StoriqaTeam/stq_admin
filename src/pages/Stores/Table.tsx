@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Table } from 'antd';
 
 import { Status } from '../../../__generated__/globalTypes';
