@@ -133,7 +133,7 @@ class AddCategory extends React.Component<PropsType, StateType> {
               }),
               toPairs(this.state.translations),
             ) as Array<{ lang: Language; text: string }>,
-            level: 1,
+            parentId: parseInt(this.state.parentCategory, 10) || 0,
           },
         },
       })
