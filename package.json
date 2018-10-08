@@ -52,7 +52,7 @@
     "build": "yarn downloadSchema && yarn codegen && rm -rf dist && yarn webpack --config ./config/webpack.config.js --mode production --optimize-minimize",
     "dev": "yarn downloadSchema && yarn webpack-dev-server --mode development --config './config/webpack.config.js' --watch --host 127.0.0.1",
     "codegen": "yarn downloadSchema && yarn apollo codegen:generate --schema=schema.json --target=typescript --addTypename",
-    "downloadSchema": "rm -f ./schema.json || true && yarn apollo-codegen introspect-schema https://nightly.stq.cloud/graphql --output schema.json"
+    "downloadSchema": "rm -f ./schema.json; yarn apollo-codegen introspect-schema ${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --output schema.json"
   },
   "resolutions": {
     "graphql": "14.0.2"
