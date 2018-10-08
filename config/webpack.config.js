@@ -7,7 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, '../dist'),
     filename: 'bundle.js',
-    publicPath: '/',
+    publicPath: process.env.PUBLIC_PATH || '/',
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -59,14 +59,17 @@ module.exports = {
     ],
   },
   /* todo: extract `devServer` block to dev.config */
-  devServer: {
-    historyApiFallback: true,
-    publicPath: '/',
-    contentBase: path.join(__dirname, '../dist'),
-    port: 9000,
-    https: false,
-    disableHostCheck: true,
-  },
+  devServer:
+    process.env.NODE_ENV === 'production'
+      ? {}
+      : {
+          historyApiFallback: true,
+          publicPath: '/',
+          contentBase: path.join(__dirname, '../dist'),
+          port: 9000,
+          https: false,
+          disableHostCheck: true,
+        },
   devtool: 'inline-source-map',
   plugins: [
     new ExtractTextPlugin({ filename: 'styles.css' }),

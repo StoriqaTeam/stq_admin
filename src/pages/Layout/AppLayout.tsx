@@ -35,19 +35,28 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[]}>
           <Menu.Item key="1">
             <Icon type="user" />
-            <a className={styles.menuLink} href="/users">
+            <a
+              className={styles.menuLink}
+              href={`${process.env.PUBLIC_PATH}/users`}
+            >
               Users
             </a>
           </Menu.Item>
           <Menu.Item key="2">
             <Icon type="shopping" />
-            <a className={styles.menuLink} href="/stores">
+            <a
+              className={styles.menuLink}
+              href={`${process.env.PUBLIC_PATH}/stores`}
+            >
               Stores
             </a>
           </Menu.Item>
           <Menu.Item key="3">
             <Icon type="profile" />
-            <a className={styles.menuLink} href="/categories">
+            <a
+              className={styles.menuLink}
+              href={`${process.env.PUBLIC_PATH}/categories`}
+            >
               Categories
             </a>
           </Menu.Item>
