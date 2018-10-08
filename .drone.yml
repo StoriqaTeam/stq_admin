@@ -1,0 +1,270 @@
+pipeline:
+  restore-cache:
+    image: plugins/s3-cache:1
+    pull: true
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    mount:
+    - node_modules
+    restore: true
+
+###
+# Test PR
+###
+
+  update_pr:
+    image: plugins/git
+    commands:
+    - export BRANCH_SRC=origin/${DRONE_COMMIT_REFSPEC%%:*} BRANCH_DST=origin/${DRONE_BRANCH}
+    - cp -rpf .git .git.bak
+    - git config --global user.email "service@storiqa.com" && git config --global user.name "Storiqa Common"
+    - git fetch && git checkout $BRANCH_SRC && git merge --no-commit $BRANCH_DST
+    - rm -rf .git && mv -f .git.bak .git
+    when:
+      event: pull_request
+  test:
+    image: node:9.9
+    environment:
+    - RUN_MODE=k8s
+    environment:
+    - GRAPHQL_URL="https://stable.stq.cloud/graphql"
+    commands:
+    - yarn -s --no-progress --non-interactive --production=false
+    - yarn ci
+    when:
+      event: pull_request
+
+###
+# Build and deploy to nightly
+###
+
+  build:
+    image: node:9.9
+    environment:
+    - GRAPHQL_URL="https://nightly.stq.cloud/graphql"
+    commands:
+    - yarn -s --no-progress --non-interactive --production=false
+    - yarn build
+    when:
+      event: push
+      branch: master
+  package:
+    image: plugins/docker
+    repo: storiqateam/stq-admin
+    tags:
+    - nightly_${DRONE_BRANCH//\//_}
+    - nightly_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - docker_username
+    - docker_password
+    when:
+      event: push
+      branch: master
+  deploy:
+    image: jackthestripper/drone_setimage
+    object: admin
+    kind: deployment
+    namespace: default
+    img_names: storiqateam/stq-admin
+    img_cnts: admin
+    img_tags: nightly_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - source: k8s_nightly_ca
+      target: k8s_ca
+    - source: k8s_nightly_user
+      target: k8s_user
+    - source: k8s_nightly_token
+      target: k8s_token
+    - source: k8s_nightly_addr
+      target: k8s_addr
+    when:
+      branch: master
+      event: push
+
+###
+# Build and deploy to stable
+###
+
+  build:
+    image: node:9.9
+    environment:
+    - GRAPHQL_URL="https://stable.stq.cloud/graphql"
+    commands:
+    - yarn -s --no-progress --non-interactive --production=false
+    - yarn build
+    when:
+      event: deployment
+      environment: stable
+  package:
+    image: plugins/docker
+    repo: storiqateam/stq-admin
+    tags:
+    - stable_${DRONE_BRANCH//\//_}
+    - stable_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - docker_username
+    - docker_password
+    when:
+      event: deployment
+      environment: stable
+  deploy:
+    image: jackthestripper/drone_setimage
+    object: admin
+    kind: deployment
+    namespace: default
+    img_names: storiqateam/stq-admin
+    img_cnts: admin
+    img_tags: stable_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - source: k8s_stable_ca
+      target: k8s_ca
+    - source: k8s_stable_user
+      target: k8s_user
+    - source: k8s_stable_token
+      target: k8s_token
+    - source: k8s_stable_addr
+      target: k8s_addr
+    when:
+      event: deployment
+      environment: stable
+
+###
+# Build and deploy to stage
+###
+
+  build:
+    image: node:9.9
+    environment:
+    - GRAPHQL_URL="https://stage.stq.cloud/graphql"
+    commands:
+    - yarn -s --no-progress --non-interactive --production=false
+    - yarn build
+    when:
+      event: tag
+  package:
+    image: plugins/docker
+    repo: storiqateam/stq-admin
+    tags:
+    - stage_${DRONE_BRANCH//\//_}
+    - stage_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - docker_username
+    - docker_password
+    when:
+      event: tag
+  deploy:
+    image: jackthestripper/drone_setimage
+    object: admin
+    kind: deployment
+    namespace: default
+    img_names: storiqateam/stq-admin
+    img_cnts: admin
+    img_tags: stage_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - source: k8s_stage_ca
+      target: k8s_ca
+    - source: k8s_stage_user
+      target: k8s_user
+    - source: k8s_stage_token
+      target: k8s_token
+    - source: k8s_stage_addr
+      target: k8s_addr
+    when:
+      event: tag
+
+###
+# Build and deploy to production
+###
+
+  build:
+    image: node:9.9
+    environment:
+    - GRAPHQL_URL="https://production.stq.cloud/graphql"
+    commands:
+    - yarn -s --no-progress --non-interactive --production=false
+    - yarn build
+    when:
+      event: deployment
+      environment: production
+  package:
+    image: plugins/docker
+    repo: storiqateam/stq-admin
+    tags:
+    - production_${DRONE_BRANCH//\//_}
+    - production_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - docker_username
+    - docker_password
+    when:
+      event: deployment
+      environment: production
+  deploy:
+    image: jackthestripper/drone_setimage
+    object: admin
+    kind: deployment
+    namespace: default
+    img_names: storiqateam/stq-admin
+    img_cnts: admin
+    img_tags: production_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    secrets:
+    - source: k8s_prod_ca
+      target: k8s_ca
+    - source: k8s_prod_user
+      target: k8s_user
+    - source: k8s_prod_token
+      target: k8s_token
+    - source: k8s_prod_addr
+      target: k8s_addr
+    when:
+      event: deployment
+      environment: production
+
+###
+# Notifications and post-deploy ops
+###
+
+  rebuild-cache:
+    group: package
+    image: plugins/s3-cache:1
+    pull: true
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    mount:
+    - node_modules
+    rebuild: true
+    when:
+      branch: master
+      event: push
+  slack:
+    image: plugins/slack
+    webhook: https://hooks.slack.com/services/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
+    channel: release
+    icon_url: https://drone.io/favicon.ico
+    username: cd.stq.cloud
+    template: >
+      {{#success build.status}}
+        {{repo.name}} has been released to stage.stq.cloud!
+      {{else}}
+        Failed to deploy {{repo.name}} to stage.stq.cloud! More details here {{build.link}}
+      {{/success}}
+    when:
+      event: tag
+      status:
+      - success
+      - failure
+  slack:
+    image: plugins/slack
+    webhook: https://hooks.slack.com/services/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
+    channel: release
+    icon_url: https://drone.io/favicon.ico
+    username: cd.stq.cloud
+    template: >
+      {{#success build.status}}
+        {{repo.name}} has been released to production.stq.cloud!
+      {{else}}
+        Failed to deploy {{repo.name}} to production.stq.cloud! More details here {{build.link}}
+      {{/success}}
+    when:
+      event: deployment
+      environment: production
+      status:
+      - success
+      - failure
