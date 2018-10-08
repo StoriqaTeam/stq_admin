@@ -12,6 +12,7 @@ import {
   AddCategory,
   CategoryAttributes,
 } from '../pages/Categories';
+import { Goods } from '../pages/Goods';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
 const ME = gql`
@@ -44,6 +45,7 @@ class Entry extends React.PureComponent<{}> {
                   />
                   <Route path="/users" exact component={Users} />
                   <Route path="/stores" exact component={Stores} />
+                  <Route path="/stores/:id/goods" exact component={Goods} />
                   <Route path="/categories" exact component={Categories} />
                   <Route
                     path="/categories/:id/edit"

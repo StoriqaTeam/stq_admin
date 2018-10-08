@@ -3,6 +3,7 @@ import { Button, Menu, Dropdown, Icon, Spin } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
+import { withRouter, RouteComponentProps } from 'react-router';
 import {
   concat,
   map,
@@ -47,7 +48,7 @@ import * as styles from './Stores.scss';
 
 const RECORDS_PER_PAGE = 20;
 
-interface PropsType {
+interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
 }
 
@@ -148,6 +149,21 @@ class Stores extends React.Component<PropsType, StateType> {
         title: 'createdAt',
         dataIndex: 'createdAt',
         render: () => '-',
+      },
+      {
+        key: 'goods',
+        title: 'Goods',
+        dataIndex: 'goods',
+        width: 50,
+        render: (_, record) => (
+          <Button
+            icon="appstore"
+            shape="circle"
+            onClick={() => {
+              this.props.history.push(`/stores/${record.id}/goods`);
+            }}
+          />
+        ),
       },
     ];
   }
@@ -328,8 +344,10 @@ class Stores extends React.Component<PropsType, StateType> {
   }
 }
 
+const StoresWithRouter = withRouter(Stores);
+
 export default (props: PropsType) => (
   <ApolloConsumer>
-    {client => <Stores {...props} client={client} />}
+    {client => <StoresWithRouter {...props} client={client} />}
   </ApolloConsumer>
 );
