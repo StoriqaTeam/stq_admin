@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Layout, Menu, Icon, Button } from 'antd';
+import { Link } from 'react-router-dom';
 
 import * as styles from './AppLayout.scss';
 
@@ -24,21 +25,32 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
     });
   };
 
+  handleLogout = () => {
+    localStorage.removeItem('jwt');
+    window.location.href = process.env.PUBLIC_PATH || '/';
+  };
+
   renderSidebar = () => {
     return (
       <Sider trigger={null} collapsible collapsed={this.state.collapsed}>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[]}>
           <Menu.Item key="1">
             <Icon type="user" />
-            <span>Users</span>
+            <Link className={styles.menuLink} to="/users">
+              Users
+            </Link>
           </Menu.Item>
           <Menu.Item key="2">
             <Icon type="shopping" />
-            <span>Stores</span>
+            <Link className={styles.menuLink} to="/stores">
+              Stores
+            </Link>
           </Menu.Item>
           <Menu.Item key="3">
             <Icon type="profile" />
-            <span>Categories</span>
+            <Link className={styles.menuLink} to="/categories">
+              Categories
+            </Link>
           </Menu.Item>
         </Menu>
       </Sider>
@@ -71,9 +83,12 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               icon="logout"
               size="large"
               className={styles.logout}
+              onClick={this.handleLogout}
             />
           </Header>
-          <Content className={styles.content}>{this.props.children}</Content>
+          <Content className={styles.content}>
+            {this.props.children || 'Select menu item on the left side'}
+          </Content>
         </Layout>
       </Layout>
     );
