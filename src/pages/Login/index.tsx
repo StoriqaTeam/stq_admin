@@ -42,7 +42,7 @@ class LoginForm extends React.PureComponent<Props> {
       <Query<LoginMe> query={LOGIN_ME} fetchPolicy="network-only">
         {({ loading: qLoading, data: qData, error: qError, client }) => {
           return qData && qData.me ? (
-            <Redirect to="/" />
+            <Redirect to={'/admin'} />
           ) : (
             <Mutation<LoginMutation, LoginMutationVariables>
               mutation={LOGIN_MUTATION}
@@ -95,7 +95,8 @@ class LoginForm extends React.PureComponent<Props> {
                                   'jwt',
                                   resp.data.getJWTByEmail.token,
                                 );
-                                window.location.href = '/';
+                                window.location.href =
+                                  process.env.PUBLIC_PATH || '/';
                               }
                             });
                           }

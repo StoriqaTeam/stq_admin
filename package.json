@@ -43,14 +43,14 @@
     "tslint-config-airbnb": "5.11.0",
     "tslint-react": "3.6.0",
     "typescript": "3.0.3",
-    "typings-for-css-modules-loader": "^1.7.0",
+    "typings-for-css-modules-loader": "1.7.0",
     "webpack": "4.19.1",
     "webpack-cli": "3.1.0",
     "webpack-dev-server": "3.1.8"
   },
   "scripts": {
-    "build": "export NODE_ENV='production' && export PUBLIC_PATH='/admin' && yarn downloadSchema && yarn codegen && rm -rf dist && yarn webpack --config ./config/webpack.config.js --mode production --optimize-minimize",
-    "dev": "yarn downloadSchema && yarn webpack-dev-server --mode development --config './config/webpack.config.js' --watch --host 127.0.0.1",
+    "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint='https://beta.stq.cloud/graphql'",
+    "dev": "yarn downloadSchema && yarn webpack-dev-server --env.development --config './config/webpack.config.js' --watch --host 127.0.0.1",
     "codegen": "yarn downloadSchema && yarn apollo codegen:generate --schema=schema.json --target=typescript --addTypename",
     "downloadSchema": "rm -f ./schema.json; yarn apollo-codegen introspect-schema ${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --output schema.json"
   },

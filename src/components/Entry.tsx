@@ -35,13 +35,6 @@ class Entry extends React.PureComponent<{}> {
             if (data && data.me) {
               return (
                 <Switch>
-                  <Route
-                    path="/"
-                    exact
-                    component={() => (
-                      <div>Select menu item on the left side</div>
-                    )}
-                  />
                   <Route path="/users" exact component={Users} />
                   <Route path="/stores" exact component={Stores} />
                   <Route path="/categories" exact component={Categories} />

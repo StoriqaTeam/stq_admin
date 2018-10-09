@@ -7,7 +7,7 @@ import Entry from './components/Entry';
 import Login from './pages/Login';
 
 const client = new ApolloClient({
-  uri: 'https://nightly.stq.cloud/graphql',
+  uri: process.env.GRAPHQL_URL,
   headers: {
     Authorization: `Bearer ${localStorage.getItem('jwt')}`,
     Currency: 'STQ',
@@ -15,7 +15,7 @@ const client = new ApolloClient({
 });
 
 const App = () => (
-  <BrowserRouter>
+  <BrowserRouter basename={process.env.PUBLIC_PATH}>
     <ApolloProvider client={client}>
       <Switch>
         <Route path="/login" exact component={Login} />

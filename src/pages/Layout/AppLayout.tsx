@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Layout, Menu, Icon, Button } from 'antd';
+import { Link } from 'react-router-dom';
 
 import * as styles from './AppLayout.scss';
 
@@ -26,7 +27,7 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
 
   handleLogout = () => {
     localStorage.removeItem('jwt');
-    window.location.href = '/';
+    window.location.href = process.env.PUBLIC_PATH || '/';
   };
 
   renderSidebar = () => {
@@ -35,30 +36,21 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[]}>
           <Menu.Item key="1">
             <Icon type="user" />
-            <a
-              className={styles.menuLink}
-              href={`${process.env.PUBLIC_PATH}/users`}
-            >
+            <Link className={styles.menuLink} to="/users">
               Users
-            </a>
+            </Link>
           </Menu.Item>
           <Menu.Item key="2">
             <Icon type="shopping" />
-            <a
-              className={styles.menuLink}
-              href={`${process.env.PUBLIC_PATH}/stores`}
-            >
+            <Link className={styles.menuLink} to="/stores">
               Stores
-            </a>
+            </Link>
           </Menu.Item>
           <Menu.Item key="3">
             <Icon type="profile" />
-            <a
-              className={styles.menuLink}
-              href={`${process.env.PUBLIC_PATH}/categories`}
-            >
+            <Link className={styles.menuLink} to="/categories">
               Categories
-            </a>
+            </Link>
           </Menu.Item>
         </Menu>
       </Sider>
@@ -94,7 +86,9 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               onClick={this.handleLogout}
             />
           </Header>
-          <Content className={styles.content}>{this.props.children}</Content>
+          <Content className={styles.content}>
+            {this.props.children || 'Select menu item on the left side'}
+          </Content>
         </Layout>
       </Layout>
     );
