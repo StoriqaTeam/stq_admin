@@ -1,4 +1,7 @@
+## Dev mode
 `yarn dev`
+
+then open http://localhost:9000
 
 ## Use custom graphql schema URL
 
@@ -13,12 +16,12 @@ The following command will fetch schema from stable.stq.cloud
 
 For set endpoint for graphql just add
 
-`--env.endpoint='https://beta.stq.cloud/graphql'`
+`GRAPHQL_URL='https://beta.stq.cloud/graphql'`
 
-to run command
-(yarn dev --env.endpoint='https://stage.stq.cloud/graphql' or yarn build --env.endpoint='https://beta.stq.cloud/graphql' for example)
+before your yarn-script command
+(`GRAPHQL_URL='https://stage.stq.cloud/graphql' yarn dev` or `GRAPHQL_URL='https://beta.stq.cloud/graphql' yarn build` for example)
 
-By default endpoint set to https://nightly.stq.cloud/graphql
+By default endpoint value is `https://nightly.stq.cloud/graphql`
 
 ## Production build
 
