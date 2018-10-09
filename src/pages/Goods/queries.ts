@@ -33,6 +33,17 @@ const GOODS_BY_STORE_ID_QUERY = gql`
             variants {
               all {
                 id
+                rawId
+                price
+                attributes {
+                  attribute {
+                    name {
+                      text
+                      lang
+                    }
+                  }
+                  value
+                }
               }
             }
           }

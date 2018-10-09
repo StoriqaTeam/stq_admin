@@ -3,8 +3,9 @@ import { Table } from 'antd';
 import { Status } from '../../../__generated__/globalTypes';
 
 export interface IVariant {
-  id: string;
-  name: string;
+  id: number;
+  price: number;
+  characteristics: string[]; // [attrName: attrValue]
 }
 
 export interface IGood {

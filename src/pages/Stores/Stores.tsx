@@ -227,7 +227,7 @@ class Stores extends React.Component<PropsType, StateType> {
         ownerLastname: node.storeManager && node.storeManager.lastName,
         ownerEmail: node.storeManager && node.storeManager.email,
         country: node.addressFull.country,
-        productsCount: 1,
+        productsCount: node.productsCount,
       };
     }, edges);
   };

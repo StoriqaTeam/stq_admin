@@ -51,7 +51,7 @@
   },
   "scripts": {
     "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql}",
-    "dev": "yarn downloadSchema && yarn webpack-dev-server --env.development --config './config/webpack.config.js' --watch --host 127.0.0.1",
+    "dev": "yarn downloadSchema && yarn webpack-dev-server --env.development  --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --config './config/webpack.config.js' --watch --host 127.0.0.1",
     "codegen": "yarn downloadSchema && yarn apollo codegen:generate --schema=schema.json --target=typescript --addTypename",
     "downloadSchema": "rm -f ./schema.json; yarn apollo-codegen introspect-schema ${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --output schema.json",
     "ci": "echo 'Implement this, pleaaaaase'"

@@ -4,16 +4,18 @@ import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
-import { propOr, map, pathOr } from 'ramda';
+import { propOr, map, pathOr, join } from 'ramda';
 import { parse, format } from 'date-fns';
 
-import GoodsTable, { IGood } from './Table';
+import GoodsTable, { IGood, IVariant } from './Table';
+import Subtable from './Subtable';
 import { GOODS_BY_STORE_ID_QUERY } from './queries';
 import {
   BaseProductsByStoreId,
   BaseProductsByStoreIdVariables,
   BaseProductsByStoreId_store_baseProducts_edges as BaseProductEdge,
+  BaseProductsByStoreId_store_baseProducts_edges_node_variants_all as Variant,
+  BaseProductsByStoreId_store_baseProducts_edges_node_variants_all_attributes as Attribute,
 } from './__generated__/BaseProductsByStoreId';
 import { Status } from '../../../__generated__/globalTypes';
 import * as styles from './Goods.scss';
@@ -84,11 +86,6 @@ class Goods extends React.Component<PropsType, StateType> {
         dataIndex: 'rating',
         title: 'Rating',
       },
-      {
-        key: 'variants',
-        dataIndex: 'variants',
-        title: 'Variants',
-      },
     ];
   }
 
@@ -113,7 +110,22 @@ class Goods extends React.Component<PropsType, StateType> {
         updatedAt: parse(edge.node.updatedAt),
         isActive: edge.node.isActive,
         rating: edge.node.rating,
-        variants: [],
+        variants: map(
+          (variant: Variant) => ({
+            id: variant.rawId,
+            price: variant.price,
+            characteristics: map(
+              (attr: Attribute) =>
+                `${
+                  attr.attribute
+                    ? pathOr('', [0, 'text'], attr.attribute.name)
+                    : ''
+                }: ${attr.value}`,
+              (variant.attributes && variant.attributes) || [],
+            ),
+          }),
+          (edge.node.variants && edge.node.variants.all) || [],
+        ),
       }),
       baseProducts,
     );
@@ -174,6 +186,31 @@ class Goods extends React.Component<PropsType, StateType> {
           rowKey="id"
           pagination={false}
           rowClassName={() => styles.row}
+          expandedRowRender={(record: IGood) => (
+            <Subtable
+              columns={[
+                {
+                  key: 'id',
+                  title: 'ID',
+                  dataIndex: 'id',
+                },
+                {
+                  key: 'characteristics',
+                  title: 'Characteristics',
+                  dataIndex: 'characteristics',
+                  render: (_, rec) => join(';', rec.characteristics),
+                },
+                {
+                  key: 'price',
+                  title: 'Price',
+                  dataIndex: 'price',
+                },
+              ]}
+              dataSource={record.variants}
+              rowKey="id"
+              pagination={false}
+            />
+          )}
         />
       </Spin>
     );
