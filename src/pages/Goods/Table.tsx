@@ -13,7 +13,7 @@ export interface IGood {
   rawId: number;
   name: string;
   status: Status;
-  category: any; // Category;
+  category: string;
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;

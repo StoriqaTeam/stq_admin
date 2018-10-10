@@ -20,10 +20,21 @@ const GOODS_BY_STORE_ID_QUERY = gql`
             }
             status
             category {
-              id
               name {
                 lang
                 text
+              }
+              parent {
+                name {
+                  lang
+                  text
+                }
+                parent {
+                  name {
+                    lang
+                    text
+                  }
+                }
               }
             }
             createdAt
@@ -53,4 +64,24 @@ const GOODS_BY_STORE_ID_QUERY = gql`
   }
 `;
 
-export { GOODS_BY_STORE_ID_QUERY };
+const PUBLISH_BASE_PRODUCT = gql`
+  mutation PublishBaseProduct($id: Int!) {
+    publishBaseProducts(ids: [$id]) {
+      id
+      rawId
+      status
+    }
+  }
+`;
+
+const DRAFT_BASE_PRODUCT = gql`
+  mutation DraftBaseProduct($id: Int!) {
+    draftBaseProducts(ids: [$id]) {
+      id
+      rawId
+      status
+    }
+  }
+`;
+
+export { GOODS_BY_STORE_ID_QUERY, PUBLISH_BASE_PRODUCT, DRAFT_BASE_PRODUCT };

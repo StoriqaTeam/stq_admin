@@ -1,15 +1,29 @@
 import * as React from 'react';
-import { Spin, Button, Icon } from 'antd';
+import { Spin, Button, Icon, Dropdown, Menu, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { propOr, map, pathOr, join } from 'ramda';
+import {
+  propOr,
+  map,
+  pathOr,
+  join,
+  findIndex,
+  over,
+  whereEq,
+  assoc,
+  lensIndex,
+} from 'ramda';
 import { parse, format } from 'date-fns';
 
-import GoodsTable, { IGood, IVariant } from './Table';
+import GoodsTable, { IGood } from './Table';
 import Subtable from './Subtable';
-import { GOODS_BY_STORE_ID_QUERY } from './queries';
+import {
+  GOODS_BY_STORE_ID_QUERY,
+  PUBLISH_BASE_PRODUCT,
+  DRAFT_BASE_PRODUCT,
+} from './queries';
 import {
   BaseProductsByStoreId,
   BaseProductsByStoreIdVariables,
@@ -17,6 +31,14 @@ import {
   BaseProductsByStoreId_store_baseProducts_edges_node_variants_all as Variant,
   BaseProductsByStoreId_store_baseProducts_edges_node_variants_all_attributes as Attribute,
 } from './__generated__/BaseProductsByStoreId';
+import {
+  PublishBaseProduct,
+  PublishBaseProductVariables,
+} from './__generated__/PublishBaseProduct';
+import {
+  DraftBaseProduct,
+  DraftBaseProductVariables,
+} from './__generated__/DraftBaseProduct';
 import { Status } from '../../../__generated__/globalTypes';
 import * as styles from './Goods.scss';
 
@@ -57,6 +79,31 @@ class Goods extends React.Component<PropsType, StateType> {
         key: 'status',
         dataIndex: 'status',
         title: 'Status',
+        render: (_, record) => (
+          <Dropdown
+            overlay={
+              <Menu
+                onClick={({ key }) => {
+                  this.handleChangingStatusForProduct({
+                    id: record.rawId,
+                    status: key as Status,
+                  });
+                }}
+              >
+                {map(
+                  item => (
+                    <Menu.Item key={item}>{item}</Menu.Item>
+                  ),
+                  Object.keys(Status),
+                )}
+              </Menu>
+            }
+          >
+            <Button>
+              {record.status} <Icon type="down" />
+            </Button>
+          </Dropdown>
+        ),
       },
       {
         key: 'category',
@@ -93,6 +140,80 @@ class Goods extends React.Component<PropsType, StateType> {
     this.fetchData();
   }
 
+  handleChangingStatusForProduct = (input: { id: number; status: Status }) => {
+    Modal.confirm({
+      title: 'Are you sure?',
+      content: `Change status for product with id ${input.id}`,
+      onOk: () => {
+        if (input.status === Status.PUBLISHED) {
+          return this.props.client
+            .mutate<PublishBaseProduct, PublishBaseProductVariables>({
+              mutation: PUBLISH_BASE_PRODUCT,
+              variables: {
+                id: input.id,
+              },
+            })
+            .then(({ data }) => {
+              if (data) {
+                const id = pathOr(
+                  null,
+                  ['publishBaseProducts', 0, 'rawId'],
+                  data,
+                );
+                const status = pathOr(
+                  null,
+                  ['publishBaseProducts', 0, 'status'],
+                  data,
+                );
+                if (id && status) {
+                  this.updateStatusForRecord(id, status);
+                }
+              }
+              return Promise.resolve();
+            });
+        } else if (input.status === Status.DRAFT) {
+          return this.props.client
+            .mutate<DraftBaseProduct, DraftBaseProductVariables>({
+              mutation: DRAFT_BASE_PRODUCT,
+              variables: {
+                id: input.id,
+              },
+            })
+            .then(({ data }) => {
+              if (data) {
+                const id = pathOr(
+                  null,
+                  ['draftBaseProducts', 0, 'rawId'],
+                  data,
+                );
+                const status = pathOr(
+                  null,
+                  ['draftBaseProducts', 0, 'status'],
+                  data,
+                );
+                if (id && status) {
+                  this.updateStatusForRecord(id, status);
+                }
+              }
+              return Promise.resolve();
+            });
+        }
+      },
+    });
+  };
+
+  updateStatusForRecord = (id: number, status: Status) => {
+    const idx = findIndex(whereEq({ rawId: id }), this.state.dataSource);
+    const statusLens = lensIndex(idx);
+    this.setState(prevState => ({
+      dataSource: over(
+        statusLens,
+        assoc('status', status),
+        prevState.dataSource,
+      ),
+    }));
+  };
+
   prepareDatasource = (data: BaseProductsByStoreId): IGood[] => {
     const baseProducts: BaseProductEdge[] =
       (data.store &&
@@ -105,7 +226,15 @@ class Goods extends React.Component<PropsType, StateType> {
         rawId: edge.node.rawId,
         name: pathOr('noname', ['name', 0, 'text'], edge.node),
         status: edge.node.status,
-        category: '',
+        category: join(' / ', [
+          pathOr(
+            '-',
+            ['parent', 'parent', 'name', 0, 'text'],
+            edge.node.category,
+          ),
+          pathOr('-', ['parent', 'name', 0, 'text'], edge.node.category),
+          pathOr('-', ['name', 0, 'text'], edge.node.category),
+        ]),
         createdAt: parse(edge.node.createdAt),
         updatedAt: parse(edge.node.updatedAt),
         isActive: edge.node.isActive,
