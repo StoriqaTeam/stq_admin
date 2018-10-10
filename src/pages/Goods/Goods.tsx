@@ -19,6 +19,7 @@ import { parse, format } from 'date-fns';
 
 import GoodsTable, { IGood } from './Table';
 import Subtable from './Subtable';
+import FilterForm, { GoodsFilterType, StatusFilter } from './FilterForm';
 import {
   GOODS_BY_STORE_ID_QUERY,
   PUBLISH_BASE_PRODUCT,
@@ -27,9 +28,9 @@ import {
 import {
   BaseProductsByStoreId,
   BaseProductsByStoreIdVariables,
-  BaseProductsByStoreId_store_baseProducts_edges as BaseProductEdge,
-  BaseProductsByStoreId_store_baseProducts_edges_node_variants_all as Variant,
-  BaseProductsByStoreId_store_baseProducts_edges_node_variants_all_attributes as Attribute,
+  BaseProductsByStoreId_store_findProductsAdmin_edges as BaseProductEdge,
+  BaseProductsByStoreId_store_findProductsAdmin_edges_node_variants_all as Variant,
+  BaseProductsByStoreId_store_findProductsAdmin_edges_node_variants_all_attributes as Attribute,
 } from './__generated__/BaseProductsByStoreId';
 import {
   PublishBaseProduct,
@@ -39,7 +40,10 @@ import {
   DraftBaseProduct,
   DraftBaseProductVariables,
 } from './__generated__/DraftBaseProduct';
-import { Status } from '../../../__generated__/globalTypes';
+import {
+  Status,
+  SearchModeratorBaseProductInput,
+} from '../../../__generated__/globalTypes';
 import * as styles from './Goods.scss';
 
 interface PropsType extends RouteComponentProps {
@@ -50,6 +54,7 @@ interface StateType {
   isLoading: boolean;
   dataSource: IGood[];
   storeInfo: { id: number; name: string } | null;
+  searchTerm: SearchModeratorBaseProductInput;
 }
 
 class Goods extends React.Component<PropsType, StateType> {
@@ -57,6 +62,7 @@ class Goods extends React.Component<PropsType, StateType> {
     isLoading: false,
     dataSource: [],
     storeInfo: null,
+    searchTerm: {},
   };
 
   columns: Array<ColumnProps<IGood>> = [];
@@ -217,8 +223,8 @@ class Goods extends React.Component<PropsType, StateType> {
   prepareDatasource = (data: BaseProductsByStoreId): IGood[] => {
     const baseProducts: BaseProductEdge[] =
       (data.store &&
-        data.store.baseProducts &&
-        data.store.baseProducts.edges) ||
+        data.store.findProductsAdmin &&
+        data.store.findProductsAdmin.edges) ||
       [];
     return map(
       edge => ({
@@ -265,8 +271,10 @@ class Goods extends React.Component<PropsType, StateType> {
     this.props.client
       .query<BaseProductsByStoreId, BaseProductsByStoreIdVariables>({
         query: GOODS_BY_STORE_ID_QUERY,
+        fetchPolicy: 'network-only',
         variables: {
           id: parseInt(propOr(0, 'id', this.props.match.params), 10),
+          searchTerm: this.state.searchTerm,
         },
       })
       .then(({ data }) => {
@@ -281,6 +289,28 @@ class Goods extends React.Component<PropsType, StateType> {
       .finally(() => {
         this.setState({ isLoading: false });
       });
+  };
+
+  handleFilterChange = (data: GoodsFilterType) => {
+    let status: Status | null = null;
+    if (data.status === StatusFilter.PUBLISHED) {
+      status = Status.PUBLISHED;
+    } else if (data.status === StatusFilter.DRAFT) {
+      status = Status.DRAFT;
+    }
+
+    this.setState(
+      {
+        dataSource: [],
+        searchTerm: {
+          name: data.name,
+          state: status,
+        },
+      },
+      () => {
+        this.fetchData();
+      },
+    );
   };
 
   render() {
@@ -309,6 +339,7 @@ class Goods extends React.Component<PropsType, StateType> {
             </a>
           </div>
         )}
+        <FilterForm onApplyFilter={this.handleFilterChange} />
         <GoodsTable
           columns={this.columns}
           dataSource={this.state.dataSource}

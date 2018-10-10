@@ -1,7 +1,10 @@
 import gql from 'graphql-tag';
 
 const GOODS_BY_STORE_ID_QUERY = gql`
-  query BaseProductsByStoreId($id: Int!) {
+  query BaseProductsByStoreId(
+    $id: Int!
+    $searchTerm: SearchModeratorBaseProductInput!
+  ) {
     store(id: $id) {
       id
       rawId
@@ -9,7 +12,7 @@ const GOODS_BY_STORE_ID_QUERY = gql`
         lang
         text
       }
-      baseProducts {
+      findProductsAdmin(searchTerm: $searchTerm) {
         edges {
           node {
             id
