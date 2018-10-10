@@ -81,6 +81,7 @@ module.exports = (env, argv) => {
         'process.env.GRAPHQL_URL':
           JSON.stringify(env.endpoint) ||
           JSON.stringify('https://nightly.stq.cloud/graphql'),
+        'process.env.PRODUCT_URL': JSON.stringify(env.productUrl),
       }),
       new ExtractTextPlugin({ filename: 'styles.css' }),
       new HtmlWebpackPlugin({

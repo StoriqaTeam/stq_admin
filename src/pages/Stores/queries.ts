@@ -23,6 +23,7 @@ const STORES_LIST_QUERY = gql`
                 text
               }
               status
+              productsCount
               storeManager {
                 id
                 firstName

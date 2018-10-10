@@ -7,8 +7,9 @@
   "dependencies": {
     "antd": "3.9.2",
     "apollo-boost": "0.1.16",
+    "date-fns": "1.29.0",
     "graphql": "14.0.2",
-    "ramda": "^0.25.0",
+    "ramda": "0.25.0",
     "react": "16.5.1",
     "react-apollo": "2.1.11",
     "react-dom": "16.5.1",
@@ -49,8 +50,8 @@
     "webpack-dev-server": "3.1.8"
   },
   "scripts": {
-    "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql}",
-    "dev": "yarn downloadSchema && yarn webpack-dev-server --env.development --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --config './config/webpack.config.js' --watch --host 127.0.0.1",
+    "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --env.productUrl=${PRODUCT_URL-https://nightly.stq.cloud}",
+    "dev": "yarn downloadSchema && yarn webpack-dev-server --env.development --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --env.productUrl=${PRODUCT_URL-https://nightly.stq.cloud} --config './config/webpack.config.js' --watch --host 127.0.0.1",
     "codegen": "yarn downloadSchema && yarn apollo codegen:generate --schema=schema.json --target=typescript --addTypename",
     "downloadSchema": "rm -f ./schema.json; yarn apollo-codegen introspect-schema ${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --output schema.json",
     "ci": "echo 'Implement this, pleaaaaase'"
