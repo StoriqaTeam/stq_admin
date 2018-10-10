@@ -27,6 +27,7 @@ pipeline:
     - RUN_MODE=k8s
     environment:
     - GRAPHQL_URL=https://stable.stq.cloud/graphql
+    - PRODUCT_URL=https://stable.stq.cloud
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn ci
@@ -41,6 +42,7 @@ pipeline:
     image: node:9.9
     environment:
     - GRAPHQL_URL=https://nightly.stq.cloud/graphql
+    - PRODUCT_URL=https://nightly.stq.cloud
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build
@@ -88,6 +90,7 @@ pipeline:
     image: node:9.9
     environment:
     - GRAPHQL_URL=https://stable.stq.cloud/graphql
+    - PRODUCT_URL=https://stable.stq.cloud
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build
@@ -135,6 +138,7 @@ pipeline:
     image: node:9.9
     environment:
     - GRAPHQL_URL=https://stage.stq.cloud/graphql
+    - PRODUCT_URL=https://stage.stq.cloud
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build
@@ -179,6 +183,7 @@ pipeline:
     image: node:9.9
     environment:
     - GRAPHQL_URL=https://production.stq.cloud/graphql
+    - PRODUCT_URL=https://production.stq.cloud
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build

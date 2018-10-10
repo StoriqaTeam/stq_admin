@@ -330,7 +330,7 @@ class Goods extends React.Component<PropsType, StateType> {
           <div className={styles.header}>
             <h2>{this.state.storeInfo.name}</h2>
             <a
-              href={`https://nightly.stq.cloud/store/${
+              href={`${process.env.PRODUCT_URL}/store/${
                 this.state.storeInfo.id
               }`}
               target="_blank"

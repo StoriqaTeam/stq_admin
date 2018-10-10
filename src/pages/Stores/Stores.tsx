@@ -85,7 +85,7 @@ class Stores extends React.Component<PropsType, StateType> {
         dataIndex: 'name',
         render: (_, record) => (
           <a
-            href={`https://nightly.stq.cloud/store/${record.id}`}
+            href={`${process.env.PRODUCT_URL}/store/${record.id}`}
             target="_blank"
           >
             {record.name}
