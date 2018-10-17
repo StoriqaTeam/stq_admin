@@ -13,6 +13,10 @@ import {
   CategoryAttributes,
 } from '../pages/Categories';
 import { Goods } from '../pages/Goods';
+import {
+  DeliveryCompanies,
+  NewDeliveryCompany,
+} from '../pages/DeliveryCompanies';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
 const ME = gql`
@@ -37,8 +41,10 @@ class Entry extends React.PureComponent<{}> {
               return (
                 <Switch>
                   <Route path="/users" exact component={Users} />
+
                   <Route path="/stores" exact component={Stores} />
                   <Route path="/stores/:id/goods" exact component={Goods} />
+
                   <Route path="/categories" exact component={Categories} />
                   <Route
                     path="/categories/:id/edit"
@@ -50,6 +56,13 @@ class Entry extends React.PureComponent<{}> {
                     path="/categories/:id/attributes"
                     exact
                     component={CategoryAttributes}
+                  />
+
+                  <Route path="/delivery" exact component={DeliveryCompanies} />
+                  <Route
+                    path="/delivery/companies/new"
+                    exact
+                    component={NewDeliveryCompany}
                   />
                 </Switch>
               );
