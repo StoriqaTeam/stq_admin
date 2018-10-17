@@ -25,6 +25,7 @@ const USERS_QUERY = gql`
               isBlocked
               email
               rolesOnUserMicroservices
+              rolesOnStoresMicroservices
             }
           }
         }
@@ -71,10 +72,30 @@ const USER_REMOVE_ROLE_MUTATION = gql`
   }
 `;
 
+const USER_ADD_ROLE_TO_STORES_MUTATION = gql`
+  mutation AddRoleToUserOnStores($input: NewStoresRoleInput!) {
+    addRoleToUserOnStoresMicroservice(input: $input) {
+      userId
+      name
+    }
+  }
+`;
+
+const USER_REMOVE_ROLE_FROM_STORES_MUTATION = gql`
+  mutation RemoveRoleFromUserOnStores($input: RemoveStoresRoleInput!) {
+    removeRoleFromUserOnStoresMicroservice(input: $input) {
+      userId
+      name
+    }
+  }
+`;
+
 export {
   USERS_QUERY,
   USERS_BLOCK_MUTATION,
   USERS_UNBLOCK_MUTATION,
   USER_ADD_ROLE_MUTATION,
   USER_REMOVE_ROLE_MUTATION,
+  USER_ADD_ROLE_TO_STORES_MUTATION,
+  USER_REMOVE_ROLE_FROM_STORES_MUTATION,
 };
