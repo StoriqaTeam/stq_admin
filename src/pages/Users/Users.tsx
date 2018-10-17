@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
-import { Button, Divider, Alert } from 'antd';
+import { Button, Divider, Alert, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import {
   map,
@@ -70,6 +70,7 @@ interface StateType {
   dataSource: IUser[];
   filters: UserFormFilterType;
   error: Error | null;
+  openedModalUserId: number | null;
 }
 
 const RECORDS_PER_PAGE = 25;
@@ -83,6 +84,7 @@ class Users extends React.Component<PropsType, StateType> {
     dataSource: [],
     filters: {},
     error: null,
+    openedModalUserId: null,
   };
 
   columns: Array<ColumnProps<IUser>> = [];
@@ -128,54 +130,74 @@ class Users extends React.Component<PropsType, StateType> {
         dataIndex: 'roles',
         render: (_, record) => {
           return (
-            <div className={styles.roleCheckboxesWrapper}>
-              <RoleCheckbox
-                role={UserMicroserviceRole.MODERATOR}
-                label="Users moderator"
-                checked={contains(
-                  UserMicroserviceRole.MODERATOR,
-                  record.userMicroserviceRoles,
-                )}
-                onRoleToggle={this.handleRoleAssign(record.id, 'users')}
-              />
-              <RoleCheckbox
-                role={UserMicroserviceRole.SUPERUSER}
-                label="Users superadmin"
-                checked={contains(
-                  UserMicroserviceRole.SUPERUSER,
-                  record.userMicroserviceRoles,
-                )}
-                onRoleToggle={this.handleRoleAssign(record.id, 'users')}
-              />
-              <Divider dashed className={styles.divider} />
-              <RoleCheckbox
-                role={StoresMicroserviceRole.MODERATOR}
-                label="Stores moderator"
-                checked={contains(
-                  StoresMicroserviceRole.MODERATOR,
-                  record.storeMicroserviceRoles,
-                )}
-                onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
-              />
-              <RoleCheckbox
-                role={StoresMicroserviceRole.SUPERUSER}
-                label="Stores superadmin"
-                checked={contains(
-                  StoresMicroserviceRole.SUPERUSER,
-                  record.storeMicroserviceRoles,
-                )}
-                onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
-              />
-              <RoleCheckbox
-                role={StoresMicroserviceRole.PLATFORM_ADMIN}
-                label="Stores platform admin"
-                checked={contains(
-                  StoresMicroserviceRole.PLATFORM_ADMIN,
-                  record.storeMicroserviceRoles,
-                )}
-                onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
-              />
-            </div>
+            <React.Fragment>
+              <Button
+                onClick={() => {
+                  this.setState({ openedModalUserId: record.id });
+                }}
+              >
+                Manage roles
+              </Button>
+              <Modal
+                visible={this.state.openedModalUserId === record.id}
+                onOk={() => {
+                  this.setState({ openedModalUserId: null });
+                }}
+                onCancel={() => {
+                  this.setState({ openedModalUserId: null });
+                }}
+              >
+                <div className={styles.roleCheckboxesWrapper}>
+                  <h3>{record.email}</h3>
+                  <RoleCheckbox
+                    role={UserMicroserviceRole.MODERATOR}
+                    label="Block/unblock users"
+                    checked={contains(
+                      UserMicroserviceRole.MODERATOR,
+                      record.userMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'users')}
+                  />
+                  <RoleCheckbox
+                    role={UserMicroserviceRole.SUPERUSER}
+                    label="Manage users roles"
+                    checked={contains(
+                      UserMicroserviceRole.SUPERUSER,
+                      record.userMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'users')}
+                  />
+                  <Divider dashed className={styles.divider} />
+                  <RoleCheckbox
+                    role={StoresMicroserviceRole.MODERATOR}
+                    label="Block/unblock stores"
+                    checked={contains(
+                      StoresMicroserviceRole.MODERATOR,
+                      record.storeMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
+                  />
+                  <RoleCheckbox
+                    role={StoresMicroserviceRole.SUPERUSER}
+                    label="Manage store roles"
+                    checked={contains(
+                      StoresMicroserviceRole.SUPERUSER,
+                      record.storeMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
+                  />
+                  <RoleCheckbox
+                    role={StoresMicroserviceRole.PLATFORM_ADMIN}
+                    label="Manage content (categories/attrs/etc)"
+                    checked={contains(
+                      StoresMicroserviceRole.PLATFORM_ADMIN,
+                      record.storeMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
+                  />
+                </div>
+              </Modal>
+            </React.Fragment>
           );
         },
       },
