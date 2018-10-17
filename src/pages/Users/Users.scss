@@ -13,3 +13,18 @@
 .rowButton {
   width: 100px;
 }
+
+.roleCheckboxesWrapper {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+
+  label + label {
+    margin-left: 0 !important;
+  }
+}
+
+.divider {
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
+}

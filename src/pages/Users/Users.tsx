@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
-import { Button, Checkbox, Alert } from 'antd';
+import { Button, Divider, Alert, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import {
   map,
@@ -16,16 +16,17 @@ import {
   reject,
   equals,
   pathOr,
+  Lens,
 } from 'ramda';
 
 import UsersTable from './Table';
+import RoleCheckbox, { AvailableUserRoleType } from './RoleCheckbox';
 import UsersTableFilterForm from './FilterForm';
+import { getMutationForRole } from './RolesMutationsFactory';
 import {
   USERS_QUERY,
   USERS_BLOCK_MUTATION,
   USERS_UNBLOCK_MUTATION,
-  USER_ADD_ROLE_MUTATION,
-  USER_REMOVE_ROLE_MUTATION,
 } from './queries';
 import {
   UsersListQuery,
@@ -41,14 +42,9 @@ import {
   UnblockUserMutationVariables,
 } from './__generated__/UnblockUserMutation';
 import {
-  AddRoleToUserMutation,
-  AddRoleToUserMutationVariables,
-} from './__generated__/AddRoleToUserMutation';
-import {
-  RemoveRoleFromUserMutation,
-  RemoveRoleFromUserMutationVariables,
-} from './__generated__/RemoveRoleFromUserMutation';
-import { UserMicroserviceRole } from '../../../__generated__/globalTypes';
+  UserMicroserviceRole,
+  StoresMicroserviceRole,
+} from '../../../__generated__/globalTypes';
 import { UserFormFilterType } from './FilterForm';
 import * as styles from './Users.scss';
 
@@ -58,7 +54,8 @@ export interface IUser {
   firstname: string | null;
   lastname: string | null;
   isBlocked: boolean;
-  roles: UserMicroserviceRole[];
+  userMicroserviceRoles: UserMicroserviceRole[];
+  storeMicroserviceRoles: StoresMicroserviceRole[];
 }
 
 interface PropsType {
@@ -73,6 +70,7 @@ interface StateType {
   dataSource: IUser[];
   filters: UserFormFilterType;
   error: Error | null;
+  openedModalUserId: number | null;
 }
 
 const RECORDS_PER_PAGE = 25;
@@ -86,6 +84,7 @@ class Users extends React.Component<PropsType, StateType> {
     dataSource: [],
     filters: {},
     error: null,
+    openedModalUserId: null,
   };
 
   columns: Array<ColumnProps<IUser>> = [];
@@ -131,32 +130,74 @@ class Users extends React.Component<PropsType, StateType> {
         dataIndex: 'roles',
         render: (_, record) => {
           return (
-            <div>
-              <Checkbox
-                onChange={checked =>
-                  this.handleRoleAssign({
-                    add: checked.target.checked,
-                    id: record.id,
-                    role: UserMicroserviceRole.MODERATOR,
-                  })
-                }
-                checked={contains(UserMicroserviceRole.MODERATOR, record.roles)}
+            <React.Fragment>
+              <Button
+                onClick={() => {
+                  this.setState({ openedModalUserId: record.id });
+                }}
               >
-                Moderator
-              </Checkbox>
-              <Checkbox
-                onChange={checked =>
-                  this.handleRoleAssign({
-                    add: checked.target.checked,
-                    id: record.id,
-                    role: UserMicroserviceRole.SUPERUSER,
-                  })
-                }
-                checked={contains(UserMicroserviceRole.SUPERUSER, record.roles)}
+                Manage roles
+              </Button>
+              <Modal
+                visible={this.state.openedModalUserId === record.id}
+                onOk={() => {
+                  this.setState({ openedModalUserId: null });
+                }}
+                onCancel={() => {
+                  this.setState({ openedModalUserId: null });
+                }}
               >
-                Superadmin
-              </Checkbox>
-            </div>
+                <div className={styles.roleCheckboxesWrapper}>
+                  <h3>{record.email}</h3>
+                  <RoleCheckbox
+                    role={UserMicroserviceRole.MODERATOR}
+                    label="Block/unblock users"
+                    checked={contains(
+                      UserMicroserviceRole.MODERATOR,
+                      record.userMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'users')}
+                  />
+                  <RoleCheckbox
+                    role={UserMicroserviceRole.SUPERUSER}
+                    label="Manage users roles"
+                    checked={contains(
+                      UserMicroserviceRole.SUPERUSER,
+                      record.userMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'users')}
+                  />
+                  <Divider dashed className={styles.divider} />
+                  <RoleCheckbox
+                    role={StoresMicroserviceRole.MODERATOR}
+                    label="Block/unblock stores"
+                    checked={contains(
+                      StoresMicroserviceRole.MODERATOR,
+                      record.storeMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
+                  />
+                  <RoleCheckbox
+                    role={StoresMicroserviceRole.SUPERUSER}
+                    label="Manage store roles"
+                    checked={contains(
+                      StoresMicroserviceRole.SUPERUSER,
+                      record.storeMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
+                  />
+                  <RoleCheckbox
+                    role={StoresMicroserviceRole.PLATFORM_ADMIN}
+                    label="Manage content (categories/attrs/etc)"
+                    checked={contains(
+                      StoresMicroserviceRole.PLATFORM_ADMIN,
+                      record.storeMicroserviceRoles,
+                    )}
+                    onRoleToggle={this.handleRoleAssign(record.id, 'stores')}
+                  />
+                </div>
+              </Modal>
+            </React.Fragment>
           );
         },
       },
@@ -234,18 +275,33 @@ class Users extends React.Component<PropsType, StateType> {
     });
   };
 
-  addRoleToUser = (id: number, role: UserMicroserviceRole) => {
-    const idx = findIndex(whereEq({ id: id }), this.state.dataSource);
-    const lens = lensPath([idx, 'roles']);
-    const ds = over(lens, append(role), this.state.dataSource);
-    this.setState({ dataSource: ds });
-  };
+  updateRoleInState = (input: {
+    userId: number;
+    microservice: 'users' | 'stores';
+    isAdding: boolean;
+    role: UserMicroserviceRole | StoresMicroserviceRole;
+  }) => {
+    let rolesLens: Lens | null = null;
+    const userIdx = findIndex(
+      whereEq({ id: input.userId }),
+      this.state.dataSource,
+    );
+    if (input.microservice === 'users') {
+      rolesLens = lensPath([userIdx, 'userMicroserviceRoles']);
+    } else if (input.microservice === 'stores') {
+      rolesLens = lensPath([userIdx, 'storeMicroserviceRoles']);
+    }
+    if (!rolesLens) {
+      return;
+    }
 
-  deleteRoleFromUser = (id: number, role: UserMicroserviceRole) => {
-    const idx = findIndex(whereEq({ id: id }), this.state.dataSource);
-    const lens = lensPath([idx, 'roles']);
-    const ds = over(lens, reject(equals(role)), this.state.dataSource);
-    this.setState({ dataSource: ds });
+    this.setState(prevState => ({
+      dataSource: over(
+        rolesLens as Lens,
+        input.isAdding ? append(input.role) : reject(equals(input.role)),
+        prevState.dataSource,
+      ),
+    }));
   };
 
   prepareDatasource = (edges: UsersListEdges[]): IUser[] =>
@@ -256,7 +312,8 @@ class Users extends React.Component<PropsType, StateType> {
         firstname: node.firstName,
         lastname: node.lastName,
         isBlocked: node.isBlocked,
-        roles: node.rolesOnUserMicroservices,
+        userMicroserviceRoles: node.rolesOnUserMicroservices || [],
+        storeMicroserviceRoles: node.rolesOnStoresMicroservices || [],
       }),
       edges,
     );
@@ -321,60 +378,32 @@ class Users extends React.Component<PropsType, StateType> {
     );
   };
 
-  handleRoleAssign = (input: {
-    id: number;
-    role: UserMicroserviceRole;
-    add: boolean;
-  }) => {
+  handleRoleAssign = (id: number, microservice: 'users' | 'stores') => (
+    role: AvailableUserRoleType,
+    checked: boolean,
+  ) => {
     this.setState({ error: null });
-    if (input.add) {
-      this.props.client
-        .mutate<AddRoleToUserMutation, AddRoleToUserMutationVariables>({
-          mutation: USER_ADD_ROLE_MUTATION,
-          variables: {
-            input: {
-              clientMutationId: '',
-              userId: input.id,
-              name: input.role,
-            },
-          },
-        })
-        .then(({ data }) => {
-          if (!data) {
-            return;
-          }
-          const { userId, name } = data.addRoleToUserOnUsersMicroservice;
-          this.addRoleToUser(userId, name);
-        })
-        .catch(err => {
-          this.setState({ error: err });
+
+    getMutationForRole({
+      userId: id,
+      role: role,
+      checked: checked,
+      client: this.props.client,
+      microservice: microservice,
+    })
+      .then(data => {
+        if (!data) {
+          return;
+        }
+
+        this.updateRoleInState({
+          userId: id,
+          microservice: microservice,
+          isAdding: checked,
+          role: role,
         });
-    } else {
-      this.props.client
-        .mutate<
-          RemoveRoleFromUserMutation,
-          RemoveRoleFromUserMutationVariables
-        >({
-          mutation: USER_REMOVE_ROLE_MUTATION,
-          variables: {
-            input: {
-              clientMutationId: '',
-              name: input.role,
-              userId: input.id,
-            },
-          },
-        })
-        .then(({ data }) => {
-          if (!data) {
-            return;
-          }
-          const { userId, name } = data.removeRoleFromUserOnUsersMicroservice;
-          this.deleteRoleFromUser(userId, name);
-        })
-        .catch(err => {
-          this.setState({ error: err });
-        });
-    }
+      })
+      .catch(err => console.error); // tslint:disable-line
   };
 
   render() {
