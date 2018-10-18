@@ -12,6 +12,7 @@ export type FormInputsType = {
   description: string | null;
   deliveriesFrom: string[];
   logo: string;
+  currency: string;
 };
 
 interface PropsType extends FormComponentProps {
@@ -54,6 +55,7 @@ class CommonForm extends React.Component<PropsType, StateType> {
           description: values.description,
           deliveriesFrom: this.state.countries,
           logo: this.state.logoUrl || '',
+          currency: 'STQ',
         });
       }
     });
