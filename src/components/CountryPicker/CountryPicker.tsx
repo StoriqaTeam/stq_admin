@@ -12,7 +12,7 @@ import {
 } from './__generated__/CountryPickerQuery';
 
 interface PropsType {
-  //
+  onCheck: (keys: string[]) => void;
 }
 
 interface StateType {
@@ -100,7 +100,9 @@ class CountryPicker extends React.Component<PropsType, StateType> {
               onCheck={(
                 keys: string[] | { checked: string[]; halfChecked: string[] },
               ) => {
-                this.setState({ checkedKeys: keys as string[] });
+                this.setState({ checkedKeys: keys as string[] }, () => {
+                  this.props.onCheck(keys as string[]);
+                });
               }}
               checkedKeys={this.state.checkedKeys}
               selectedKeys={this.state.selectedKeys}
