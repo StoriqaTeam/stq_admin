@@ -24,7 +24,7 @@ interface StateType {
   isCountryPickerShown: boolean;
   logoUrl: string | null;
   isLogoUploading: boolean;
-  countries: string[];
+  countries: string[] | null;
 }
 
 class CommonForm extends React.Component<PropsType, StateType> {
@@ -32,8 +32,25 @@ class CommonForm extends React.Component<PropsType, StateType> {
     isCountryPickerShown: false,
     logoUrl: null,
     isLogoUploading: false,
-    countries: [],
+    countries: null,
   };
+
+  static getDerivedStateFromProps(nextProps: PropsType, prevState: StateType) {
+    const isCountriesInState = prevState.countries != null;
+    const isLogoInState = prevState.logoUrl != null;
+    return {
+      logoUrl: isLogoInState
+        ? prevState.logoUrl
+        : nextProps.initialFormData
+          ? nextProps.initialFormData.logo
+          : null,
+      countries: isCountriesInState
+        ? prevState.countries
+        : nextProps.initialFormData
+          ? nextProps.initialFormData.deliveriesFrom
+          : null,
+    };
+  }
 
   handleSubmit = (e: React.FormEvent<any>) => {
     e.preventDefault();
@@ -42,7 +59,9 @@ class CommonForm extends React.Component<PropsType, StateType> {
       message.error('Please upload logo');
       return;
     }
-    if (this.state.countries.length === 0) {
+
+    const countries = this.state.countries || [];
+    if (countries.length === 0) {
       message.error('Please choose countries');
       return;
     }
@@ -53,7 +72,7 @@ class CommonForm extends React.Component<PropsType, StateType> {
           name: values.name as string,
           label: values.label as string,
           description: values.description,
-          deliveriesFrom: this.state.countries,
+          deliveriesFrom: this.state.countries || [],
           logo: this.state.logoUrl || '',
           currency: 'STQ',
         });
@@ -86,13 +105,15 @@ class CommonForm extends React.Component<PropsType, StateType> {
   };
 
   render() {
-    console.log(this.props.initialFormData);
     const { getFieldDecorator } = this.props.form;
+    const { initialFormData } = this.props;
+    const countries = this.state.countries || [];
     return (
       <Spin spinning={false}>
         <Form onSubmit={this.handleSubmit}>
           <Form.Item label="Name">
             {getFieldDecorator('name', {
+              initialValue: initialFormData && initialFormData.name,
               rules: [
                 {
                   required: true,
@@ -104,6 +125,7 @@ class CommonForm extends React.Component<PropsType, StateType> {
           </Form.Item>
           <Form.Item label="Label">
             {getFieldDecorator('label', {
+              initialValue: initialFormData && initialFormData.label,
               rules: [
                 {
                   required: true,
@@ -114,9 +136,9 @@ class CommonForm extends React.Component<PropsType, StateType> {
             })(<Input placeholder="Label" />)}
           </Form.Item>
           <Form.Item label="Description">
-            {getFieldDecorator('description')(
-              <Input placeholder="Description" />,
-            )}
+            {getFieldDecorator('description', {
+              initialValue: initialFormData && initialFormData.description,
+            })(<Input placeholder="Description" />)}
           </Form.Item>
           <Form.Item label="Choose countries">
             <div>
@@ -127,9 +149,7 @@ class CommonForm extends React.Component<PropsType, StateType> {
               >
                 Choose
               </Button>
-              <span>
-                &nbsp;&nbsp;Choosed {this.state.countries.length} items
-              </span>
+              <span>&nbsp;&nbsp;Choosed {countries.length} items</span>
             </div>
           </Form.Item>
           <Form.Item label="Upload logo">
@@ -178,6 +198,7 @@ class CommonForm extends React.Component<PropsType, StateType> {
             onCheck={(keys: string[]) => {
               this.setState({ countries: keys });
             }}
+            checkedCountries={countries}
           />
         </Modal>
       </Spin>

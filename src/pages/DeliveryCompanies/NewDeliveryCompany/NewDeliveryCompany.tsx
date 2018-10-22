@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
-import { message } from 'antd';
+import { message, Button } from 'antd';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { pathOr } from 'ramda';
 
@@ -11,6 +11,7 @@ import {
   CreateDeliveryCompanyMutation,
   CreateDeliveryCompanyMutationVariables,
 } from './__generated__/CreateDeliveryCompanyMutation';
+import { Currency } from '../../../../__generated__/globalTypes';
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
@@ -32,7 +33,7 @@ class NewDeliveryCompany extends React.Component<PropsType> {
             label: input.label,
             description: input.description,
             logo: input.logo,
-            currency: input.currency,
+            currency: input.currency as Currency,
           },
         },
       })
@@ -49,6 +50,15 @@ class NewDeliveryCompany extends React.Component<PropsType> {
     return (
       <div>
         <h2>New delivery company</h2>
+        <Button
+          icon="left"
+          size="small"
+          onClick={() => {
+            this.props.history.push('/delivery');
+          }}
+        >
+          Go back
+        </Button>
         <CommonForm onSubmit={this.handleSubmit} />
       </div>
     );

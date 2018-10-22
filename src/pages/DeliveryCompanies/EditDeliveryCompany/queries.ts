@@ -29,4 +29,13 @@ const DELIVERY_COMPANY_QUERY = gql`
   }
 `;
 
-export { DELIVERY_COMPANY_QUERY };
+const UPDATE_DELIVERY_COMPANY_MUTATION = gql`
+  mutation UpdateDeliveryCompanyMutation($input: UpdateCompanyInput!) {
+    updateCompany(input: $input) {
+      id
+      rawId
+    }
+  }
+`;
+
+export { DELIVERY_COMPANY_QUERY, UPDATE_DELIVERY_COMPANY_MUTATION };

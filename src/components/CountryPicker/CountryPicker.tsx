@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Query } from 'react-apollo';
-import { Tree } from 'antd';
+import { Tree, Spin } from 'antd';
 import { map, sortBy, prop } from 'ramda';
 
 import { COUNTRY_PICKER_QUERY } from './queries';
@@ -13,12 +13,12 @@ import {
 
 interface PropsType {
   onCheck: (keys: string[]) => void;
+  checkedCountries: string[];
 }
 
 interface StateType {
   expandedKeys: string[];
   autoExpandParent: boolean;
-  checkedKeys: string[];
   selectedKeys: string[];
 }
 
@@ -35,9 +35,15 @@ class CountryPicker extends React.Component<PropsType, StateType> {
   state = {
     expandedKeys: ['XAL'],
     autoExpandParent: true,
-    checkedKeys: [],
+    // checkedKeys: [],
     selectedKeys: [],
   };
+
+  static getDerivedStateFromProps(nextProps: PropsType, prevState: StateType) {
+    return {
+      checkedKeys: nextProps.checkedCountries,
+    };
+  }
 
   prepareTreeData = (country: Country1stLvl): TreeNodeType[] => [
     {
@@ -90,25 +96,25 @@ class CountryPicker extends React.Component<PropsType, StateType> {
           }
           const treeData = this.prepareTreeData(data.countries);
           return (
-            <Tree
-              checkable
-              onExpand={(keys: string[]) => {
-                this.setState({ expandedKeys: keys });
-              }}
-              expandedKeys={this.state.expandedKeys}
-              autoExpandParent={this.state.autoExpandParent}
-              onCheck={(
-                keys: string[] | { checked: string[]; halfChecked: string[] },
-              ) => {
-                this.setState({ checkedKeys: keys as string[] }, () => {
+            <Spin spinning={loading}>
+              <Tree
+                checkable
+                onExpand={(keys: string[]) => {
+                  this.setState({ expandedKeys: keys });
+                }}
+                expandedKeys={this.state.expandedKeys}
+                autoExpandParent={this.state.autoExpandParent}
+                onCheck={(
+                  keys: string[] | { checked: string[]; halfChecked: string[] },
+                ) => {
                   this.props.onCheck(keys as string[]);
-                });
-              }}
-              checkedKeys={this.state.checkedKeys}
-              selectedKeys={this.state.selectedKeys}
-            >
-              {this.renderTreeNodes(treeData)}
-            </Tree>
+                }}
+                checkedKeys={this.props.checkedCountries}
+                selectedKeys={this.state.selectedKeys}
+              >
+                {this.renderTreeNodes(treeData)}
+              </Tree>
+            </Spin>
           );
         }}
       </Query>
