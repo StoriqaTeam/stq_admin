@@ -1,4 +1,9 @@
 .addButtonWrapper {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px !important;
+}
+
+.row {
+  background-color: #ffffff !important;
 }

@@ -48,6 +48,7 @@ class NewDeliveryCompany extends React.Component<PropsType> {
   render() {
     return (
       <div>
+        <h2>New delivery company</h2>
         <CommonForm onSubmit={this.handleSubmit} />
       </div>
     );

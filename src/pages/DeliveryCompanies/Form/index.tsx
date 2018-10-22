@@ -86,10 +86,10 @@ class CommonForm extends React.Component<PropsType, StateType> {
   };
 
   render() {
+    console.log(this.props.initialFormData);
     const { getFieldDecorator } = this.props.form;
     return (
       <Spin spinning={false}>
-        <h2>New delivery company</h2>
         <Form onSubmit={this.handleSubmit}>
           <Form.Item label="Name">
             {getFieldDecorator('name', {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
-import { Redirect, Switch, Route, Link } from 'react-router-dom';
+import { Redirect, Switch, Route } from 'react-router-dom';
 
 import { AppLayout } from '../pages/Layout';
 import { Users } from '../pages/Users';
@@ -16,6 +16,7 @@ import { Goods } from '../pages/Goods';
 import {
   DeliveryCompanies,
   NewDeliveryCompany,
+  EditDeliveryCompany,
 } from '../pages/DeliveryCompanies';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
@@ -63,6 +64,11 @@ class Entry extends React.PureComponent<{}> {
                     path="/delivery/companies/new"
                     exact
                     component={NewDeliveryCompany}
+                  />
+                  <Route
+                    path="/delivery/companies/:id"
+                    exact
+                    component={EditDeliveryCompany}
                   />
                 </Switch>
               );
