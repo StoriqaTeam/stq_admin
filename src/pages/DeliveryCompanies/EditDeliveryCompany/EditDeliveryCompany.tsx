@@ -19,6 +19,7 @@ import {
   UPDATE_DELIVERY_COMPANY_MUTATION,
 } from './queries';
 import CommonForm, { FormInputsType } from '../Form';
+import DeliveryPackages from '../../DeliveryPackages/DeliveryPackages';
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
@@ -123,20 +124,28 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
             Go back
           </Button>
           {company && (
-            <CommonForm
-              onSubmit={this.handleSubmit}
-              initialFormData={{
-                name: (company as DeliveryCompany).name,
-                logo: (company as DeliveryCompany).logo,
-                label: (company as DeliveryCompany).label,
-                description: (company as DeliveryCompany).description,
-                currency: (company as DeliveryCompany).currency,
-                deliveriesFrom: map(
-                  prop('alpha3'),
-                  (company as DeliveryCompany).deliveriesFrom,
-                ),
-              }}
-            />
+            <React.Fragment>
+              <CommonForm
+                onSubmit={this.handleSubmit}
+                initialFormData={{
+                  name: (company as DeliveryCompany).name,
+                  logo: (company as DeliveryCompany).logo,
+                  label: (company as DeliveryCompany).label,
+                  description: (company as DeliveryCompany).description,
+                  currency: (company as DeliveryCompany).currency,
+                  deliveriesFrom: map(
+                    prop('alpha3'),
+                    (company as DeliveryCompany).deliveriesFrom,
+                  ),
+                }}
+              />
+              <DeliveryPackages
+                companyId={parseInt(
+                  pathOr('-1', ['match', 'params', 'id'], this.props),
+                  10,
+                )}
+              />
+            </React.Fragment>
           )}
         </Spin>
       </div>
