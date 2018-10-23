@@ -9,6 +9,7 @@ import {
   DeliveryCompanyQuery,
   DeliveryCompanyQueryVariables,
   DeliveryCompanyQuery_company as DeliveryCompany,
+  DeliveryCompanyQuery_company_packages as DeliveryCompanyPackage,
 } from './__generated__/DeliveryCompanyQuery';
 import {
   UpdateDeliveryCompanyMutation,
@@ -20,6 +21,7 @@ import {
 } from './queries';
 import CommonForm, { FormInputsType } from '../Form';
 import DeliveryPackages from '../../DeliveryPackages/DeliveryPackages';
+import { IPackage } from '../../DeliveryPackages/PackagesTable';
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
@@ -85,6 +87,7 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
     this.props.client
       .query<DeliveryCompanyQuery, DeliveryCompanyQueryVariables>({
         query: DELIVERY_COMPANY_QUERY,
+        fetchPolicy: 'network-only',
         variables: {
           id: parseInt(pathOr('-1', ['match', 'params', 'id'], this.props), 10),
         },
@@ -107,6 +110,20 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
         }
       });
   };
+
+  preparePackagesDataSource = (): IPackage[] =>
+    map(
+      pkg => ({
+        id: pkg.id,
+        rawId: pkg.rawId,
+        name: pkg.name,
+        minSize: pkg.minSize,
+        maxSize: pkg.maxSize,
+        minWeight: pkg.minWeight,
+        maxWeight: pkg.maxWeight,
+      }),
+      pathOr([], ['packages'], this.state.company),
+    );
 
   render() {
     const company = this.state.company;
@@ -144,6 +161,8 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
                   pathOr('-1', ['match', 'params', 'id'], this.props),
                   10,
                 )}
+                dataSource={this.preparePackagesDataSource()}
+                client={this.props.client}
               />
             </React.Fragment>
           )}

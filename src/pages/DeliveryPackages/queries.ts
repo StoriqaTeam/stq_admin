@@ -20,7 +20,18 @@ const CONNECT_PACKAGE_TO_COMPANY_MUTATION = gql`
   }
 `;
 
+const DELETE_PACKAGE_BY_ID_MUTATION = gql`
+  mutation DeleteCompanyPackageMutation($id: Int!) {
+    deleteCompanyPackage(id: $id) {
+      id
+      rawId
+      companyId
+    }
+  }
+`;
+
 export {
   CREATE_DELIVERY_PACKAGE_MUTATION,
   CONNECT_PACKAGE_TO_COMPANY_MUTATION,
+  DELETE_PACKAGE_BY_ID_MUTATION,
 };
