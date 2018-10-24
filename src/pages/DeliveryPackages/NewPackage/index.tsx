@@ -1,8 +1,9 @@
 import * as React from 'react';
 import ApolloClient from 'apollo-client';
 import { ApolloConsumer } from 'react-apollo';
-import { pathOr } from 'ramda';
+import { pathOr, propOr } from 'ramda';
 import { withRouter, RouteComponentProps } from 'react-router';
+import { Button } from 'antd';
 
 import CommonForm, { DeliveryPackageFormInputType } from '../Form';
 import {
@@ -70,6 +71,21 @@ class NewDeliveryPackage extends React.Component<PropsType, StateType> {
   render() {
     return (
       <div>
+        <Button
+          icon="left"
+          size="small"
+          onClick={() => {
+            this.props.history.push(
+              `/delivery/companies/${propOr(
+                '-1',
+                'companyId',
+                this.props.match.params,
+              )}`,
+            );
+          }}
+        >
+          Go back
+        </Button>
         <CommonForm onSubmit={this.handleFormSubmit} />
       </div>
     );

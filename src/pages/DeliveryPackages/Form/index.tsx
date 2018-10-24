@@ -23,15 +23,27 @@ interface PropsType extends FormComponentProps {
 interface StateType {
   isLoading: boolean;
   isCountryPickerShown: boolean;
-  countries: string[];
+  countries: string[] | null;
 }
 
 class CommonForm extends React.PureComponent<PropsType, StateType> {
   state = {
     isLoading: false,
     isCountryPickerShown: false,
-    countries: [],
+    countries: null,
   };
+
+  static getDerivedStateFromProps(props: PropsType, state: StateType) {
+    const isCountriesAlreadyInState = state.countries != null;
+    const isCountriesPresentedInProps =
+      propOr(null, 'deliveriesTo', props.initialData) != null;
+    if (!isCountriesAlreadyInState && isCountriesPresentedInProps) {
+      return {
+        countries: propOr(null, 'deliveriesTo', props.initialData),
+      };
+    }
+    return {};
+  }
 
   handleSubmit = (e: React.FormEvent<any>) => {
     e.preventDefault();
@@ -51,7 +63,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
         minSize: parseFloat(propOr('-1', 'minSize', values)),
         maxWeight: parseFloat(propOr('-1', 'maxWeight', values)),
         minWeight: parseFloat(propOr('-1', 'minWeight', values)),
-        deliveriesTo: this.state.countries,
+        deliveriesTo: this.state.countries || [],
       });
     });
   };
@@ -64,6 +76,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
           <Form.Item label="Name">
             {getFieldDecorator('name', {
               rules: [{ type: 'string', required: true }],
+              initialValue: propOr(null, 'name', this.props.initialData),
             })(<Input />)}
           </Form.Item>
           <Form.Item label="Min size">
@@ -76,6 +89,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
                   transform: parseFloat,
                 },
               ],
+              initialValue: propOr(null, 'minSize', this.props.initialData),
             })(<Input />)}
           </Form.Item>
           <Form.Item label="Max size">
@@ -88,6 +102,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
                   transform: parseFloat,
                 },
               ],
+              initialValue: propOr(null, 'maxSize', this.props.initialData),
             })(<Input />)}
           </Form.Item>
           <Form.Item label="Min weight">
@@ -100,6 +115,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
                   transform: parseFloat,
                 },
               ],
+              initialValue: propOr(null, 'minWeight', this.props.initialData),
             })(<Input />)}
           </Form.Item>
           <Form.Item label="Max weight">
@@ -112,6 +128,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
                   transform: parseFloat,
                 },
               ],
+              initialValue: propOr(null, 'maxWeight', this.props.initialData),
             })(<Input />)}
           </Form.Item>
           <div>
@@ -124,7 +141,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
                 Choose countries
               </Button>
               <span>
-                &nbsp;&nbsp;Choosed {this.state.countries.length}{' '}
+                &nbsp;&nbsp;Choosed {(this.state.countries || []).length}{' '}
                 countries/regions
               </span>
             </div>
@@ -142,7 +159,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
                 onCheck={(keys: string[]) => {
                   this.setState({ countries: keys });
                 }}
-                checkedCountries={this.state.countries}
+                checkedCountries={this.state.countries || []}
               />
             </Modal>
           </div>

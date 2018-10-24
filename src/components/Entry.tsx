@@ -18,7 +18,10 @@ import {
   NewDeliveryCompany,
   EditDeliveryCompany,
 } from '../pages/DeliveryCompanies';
-import { NewDeliveryPackage } from '../pages/DeliveryPackages';
+import {
+  NewDeliveryPackage,
+  EditDeliveryPackage,
+} from '../pages/DeliveryPackages';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
 const ME = gql`
@@ -75,6 +78,11 @@ class Entry extends React.PureComponent<{}> {
                     path="/delivery/companies/:companyId/packages/new"
                     exact
                     component={NewDeliveryPackage}
+                  />
+                  <Route
+                    path="/delivery/companies/:companyId/packages/:packageId"
+                    exact
+                    component={EditDeliveryPackage}
                   />
                 </Switch>
               );
