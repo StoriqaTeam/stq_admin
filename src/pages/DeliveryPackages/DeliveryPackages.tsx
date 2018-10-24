@@ -37,7 +37,10 @@ class DeliveryPackages extends React.Component<PropsType, StateType> {
             DeleteCompanyPackageMutationVariables
           >({
             mutation: DELETE_PACKAGE_BY_ID_MUTATION,
-            variables: { id: id },
+            variables: {
+              packageId: id,
+              companyId: this.props.companyId,
+            },
           })
           .then(() => {
             window.location.reload();

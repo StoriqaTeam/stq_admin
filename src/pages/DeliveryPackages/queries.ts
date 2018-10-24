@@ -21,8 +21,8 @@ const CONNECT_PACKAGE_TO_COMPANY_MUTATION = gql`
 `;
 
 const DELETE_PACKAGE_BY_ID_MUTATION = gql`
-  mutation DeleteCompanyPackageMutation($id: Int!) {
-    deleteCompanyPackage(id: $id) {
+  mutation DeleteCompanyPackageMutation($companyId: Int!, $packageId: Int!) {
+    deleteCompanyPackage(companyId: $companyId, packageId: $packageId) {
       id
       rawId
       companyId
