@@ -52,6 +52,14 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               Categories
             </Link>
           </Menu.Item>
+          <Menu.Item key="4">
+            <Icon type="global" />
+            <Link className={styles.menuLink} to="/delivery">
+              Delivery
+              <br />
+              companies
+            </Link>
+          </Menu.Item>
         </Menu>
       </Sider>
     );

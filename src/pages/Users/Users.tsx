@@ -93,6 +93,11 @@ class Users extends React.Component<PropsType, StateType> {
     super(props);
     this.columns = [
       {
+        key: 'id',
+        title: 'Id',
+        dataIndex: 'id',
+      },
+      {
         key: 'email',
         title: 'Email',
         dataIndex: 'email',

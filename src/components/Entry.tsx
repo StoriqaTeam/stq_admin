@@ -1,7 +1,7 @@
 import * as React from 'react';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
-import { Redirect, Switch, Route, Link } from 'react-router-dom';
+import { Redirect, Switch, Route } from 'react-router-dom';
 
 import { AppLayout } from '../pages/Layout';
 import { Users } from '../pages/Users';
@@ -13,6 +13,15 @@ import {
   CategoryAttributes,
 } from '../pages/Categories';
 import { Goods } from '../pages/Goods';
+import {
+  DeliveryCompanies,
+  NewDeliveryCompany,
+  EditDeliveryCompany,
+} from '../pages/DeliveryCompanies';
+import {
+  NewDeliveryPackage,
+  EditDeliveryPackage,
+} from '../pages/DeliveryPackages';
 import { EntryMeQuery } from './__generated__/EntryMeQuery';
 
 const ME = gql`
@@ -37,8 +46,10 @@ class Entry extends React.PureComponent<{}> {
               return (
                 <Switch>
                   <Route path="/users" exact component={Users} />
+
                   <Route path="/stores" exact component={Stores} />
                   <Route path="/stores/:id/goods" exact component={Goods} />
+
                   <Route path="/categories" exact component={Categories} />
                   <Route
                     path="/categories/:id/edit"
@@ -50,6 +61,28 @@ class Entry extends React.PureComponent<{}> {
                     path="/categories/:id/attributes"
                     exact
                     component={CategoryAttributes}
+                  />
+
+                  <Route path="/delivery" exact component={DeliveryCompanies} />
+                  <Route
+                    path="/delivery/companies/new"
+                    exact
+                    component={NewDeliveryCompany}
+                  />
+                  <Route
+                    path="/delivery/companies/:id"
+                    exact
+                    component={EditDeliveryCompany}
+                  />
+                  <Route
+                    path="/delivery/companies/:companyId/packages/new"
+                    exact
+                    component={NewDeliveryPackage}
+                  />
+                  <Route
+                    path="/delivery/companies/:companyId/packages/:packageId"
+                    exact
+                    component={EditDeliveryPackage}
                   />
                 </Switch>
               );
