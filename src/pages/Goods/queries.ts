@@ -5,7 +5,7 @@ const GOODS_BY_STORE_ID_QUERY = gql`
     $id: Int!
     $searchTerm: SearchModeratorBaseProductInput!
   ) {
-    store(id: $id) {
+    store(id: $id, visibility: "active") {
       id
       rawId
       name {
