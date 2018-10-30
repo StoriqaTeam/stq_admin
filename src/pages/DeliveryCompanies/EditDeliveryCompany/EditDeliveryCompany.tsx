@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { pathOr, map, prop } from 'ramda';
+import { pathOr, map, prop, head, reduce, forEach } from 'ramda';
 import { Spin, Button } from 'antd';
 import ApolloClient from 'apollo-client';
 import { ApolloConsumer } from 'react-apollo';
@@ -22,6 +22,12 @@ import {
 import CommonForm, { FormInputsType } from '../Form';
 import DeliveryPackages from '../../DeliveryPackages/DeliveryPackages';
 import { IPackage } from '../../DeliveryPackages/PackagesTable';
+
+type SimpleCountriesTree = {
+  XAL: {
+    [key: string]: string[];
+  };
+};
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
@@ -78,6 +84,17 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
     this.fetchData();
   }
 
+  normalizeCountries = (userCountries: SimpleCountriesTree): string[] => {
+    const flatArr: string[] = [];
+    forEach(key => {
+      if (userCountries.XAL[key]) {
+        flatArr.push(...userCountries.XAL[key]);
+      }
+    }, Object.keys(userCountries.XAL));
+
+    return flatArr;
+  };
+
   fetchData = () => {
     if (!this.mounted) {
       return;
@@ -98,6 +115,7 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
           ['company'],
           data,
         );
+
         if (this.mounted) {
           this.setState({
             company: inputData,
@@ -126,7 +144,27 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
     );
 
   render() {
-    const company = this.state.company;
+    const company: DeliveryCompany | null = this.state.company;
+    let deliveriesFromTree: SimpleCountriesTree = { XAL: {} };
+    if (company) {
+      const cmp = company as DeliveryCompany;
+      const rootNode = head(cmp.deliveriesFrom);
+      if (rootNode) {
+        deliveriesFromTree = {
+          XAL: reduce(
+            (acc, item) => {
+              return {
+                ...acc,
+                [item.alpha3]: map(prop('alpha3'), item.children),
+              };
+            },
+            {},
+            rootNode.children,
+          ),
+        };
+      }
+    }
+
     return (
       <div>
         <Spin spinning={this.state.isLoading}>
@@ -150,10 +188,10 @@ class EditDeliveryCompany extends React.Component<PropsType, StateType> {
                   label: (company as DeliveryCompany).label,
                   description: (company as DeliveryCompany).description,
                   currency: (company as DeliveryCompany).currency,
-                  deliveriesFrom: map(
-                    prop('alpha3'),
-                    (company as DeliveryCompany).deliveriesFrom,
-                  ),
+                  deliveriesFrom:
+                    deliveriesFromTree === { XAL: {} }
+                      ? []
+                      : this.normalizeCountries(deliveriesFromTree),
                 }}
               />
               <DeliveryPackages

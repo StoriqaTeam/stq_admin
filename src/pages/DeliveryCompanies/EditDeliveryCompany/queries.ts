@@ -12,6 +12,12 @@ const DELIVERY_COMPANY_QUERY = gql`
       logo
       deliveriesFrom {
         alpha3
+        children {
+          alpha3
+          children {
+            alpha3
+          }
+        }
       }
       packages {
         id
@@ -23,6 +29,12 @@ const DELIVERY_COMPANY_QUERY = gql`
         minWeight
         deliveriesTo {
           alpha3
+          children {
+            alpha3
+            children {
+              alpha3
+            }
+          }
         }
       }
     }
