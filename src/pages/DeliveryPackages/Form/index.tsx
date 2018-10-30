@@ -142,7 +142,7 @@ class CommonForm extends React.PureComponent<PropsType, StateType> {
               </Button>
               <span>
                 &nbsp;&nbsp;Choosed {(this.state.countries || []).length}{' '}
-                countries/regions
+                countries
               </span>
             </div>
             <Modal

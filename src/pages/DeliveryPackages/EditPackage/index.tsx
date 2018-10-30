@@ -3,7 +3,7 @@ import { Button, message } from 'antd';
 import ApolloClient from 'apollo-client';
 import { ApolloConsumer } from 'react-apollo';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { propOr, prop, map, omit } from 'ramda';
+import { propOr, prop, map, forEach, flatten } from 'ramda';
 
 import CommonForm, { DeliveryPackageFormInputType } from '../Form';
 import {
@@ -118,6 +118,15 @@ class EditPackage extends React.Component<PropsType, StateType> {
 
   render() {
     const pkg = this.state.package as DeliveryPackage | null;
+
+    // AAAAARGH so ugly
+    const deliveriesTo: string[] = [];
+    if (pkg && pkg.deliveriesTo[0]) {
+      forEach(item => {
+        deliveriesTo.push(...(map(prop('alpha3'), item.children) as string[]));
+      }, pkg.deliveriesTo[0].children);
+    }
+
     return (
       <React.Fragment>
         <Button
@@ -147,7 +156,7 @@ class EditPackage extends React.Component<PropsType, StateType> {
               maxSize: pkg.maxSize,
               minWeight: pkg.minWeight,
               maxWeight: pkg.maxWeight,
-              deliveriesTo: map(prop('alpha3'), pkg.deliveriesTo),
+              deliveriesTo: deliveriesTo,
             }}
           />
         )}

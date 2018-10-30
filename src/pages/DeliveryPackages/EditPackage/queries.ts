@@ -12,6 +12,12 @@ const DELIVERY_PACKAGE_BY_ID_QUERY = gql`
       maxWeight
       deliveriesTo {
         alpha3
+        children {
+          alpha3
+          children {
+            alpha3
+          }
+        }
       }
     }
   }
@@ -29,6 +35,12 @@ const UPDATE_DELIVERY_PACKAGE_MUTATION = gql`
       maxWeight
       deliveriesTo {
         alpha3
+        children {
+          alpha3
+          children {
+            alpha3
+          }
+        }
       }
     }
   }
