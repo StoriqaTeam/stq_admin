@@ -124,7 +124,7 @@ class EditPackage extends React.Component<PropsType, StateType> {
     if (pkg && pkg.deliveriesTo[0]) {
       forEach(item => {
         deliveriesTo.push(...(map(prop('alpha3'), item.children) as string[]));
-      }, pkg.deliveriesTo[0].children);
+      }, pkg.deliveriesTo[0].children || []);
     }
 
     return (
