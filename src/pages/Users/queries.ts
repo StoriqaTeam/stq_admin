@@ -2,18 +2,22 @@ import gql from 'graphql-tag';
 
 const USERS_QUERY = gql`
   query UsersListQuery(
-    $first: Int
-    $after: ID
-    $searchTerms: SearchUserInput!
+    $currentPage: Int!
+    $itemsCount: Int!
+    $searchTerm: SearchUserInput!
   ) {
     me {
       id
       admin {
-        usersSearch(searchTerm: $searchTerms, first: $first, after: $after) {
+        usersSearchPages(
+          currentPage: $currentPage
+          itemsCount: $itemsCount
+          searchTerm: $searchTerm
+        ) {
           pageInfo {
-            hasNextPage
-            endCursor
-            startCursor
+            currentPage
+            pageItemsCount
+            totalPages
           }
           edges {
             cursor

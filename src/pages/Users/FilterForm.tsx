@@ -49,14 +49,14 @@ class FilterForm extends React.PureComponent<PropsType> {
           onSubmit={this.handleSubmit}
           className={styles.filterForm}
         >
+          <Form.Item label="Email">
+            {getFieldDecorator('email')(<Input placeholder="Email" />)}
+          </Form.Item>
           <Form.Item label="First name">
             {getFieldDecorator('firstname')(<Input placeholder="First name" />)}
           </Form.Item>
           <Form.Item label="Last name">
             {getFieldDecorator('lastname')(<Input placeholder="Last name" />)}
-          </Form.Item>
-          <Form.Item label="Email">
-            {getFieldDecorator('email')(<Input placeholder="Email" />)}
           </Form.Item>
           <Form.Item>
             {getFieldDecorator('isBlocked', { initialValue: 'all' })(

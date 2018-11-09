@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Menu, Dropdown, Icon, Spin } from 'antd';
+import { Button, Menu, Dropdown, Icon, Spin, Pagination } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
@@ -17,14 +17,15 @@ import {
   isNil,
   isEmpty,
   anyPass,
+  pick,
 } from 'ramda';
 
 import StoresTable, { IStore } from './Table';
 import {
   StoresListQuery,
   StoresListQueryVariables,
-  StoresListQuery_me_admin_storesSearch_edges_node as StoresListQueryEdgeNode,
-  StoresListQuery_me_admin_storesSearch_edges as StoresListQueryEdge,
+  StoresListQuery_me_admin_storesSearchPages_edges_node as StoresListQueryEdgeNode,
+  StoresListQuery_me_admin_storesSearchPages_edges as StoresListQueryEdge,
 } from './__generated__/StoresListQuery';
 import {
   PublishStoreMutation,
@@ -53,24 +54,30 @@ interface PropsType extends RouteComponentProps {
 }
 
 interface StateType {
-  first: number;
-  after: string | null;
   dataSource: IStore[];
   isLoading: boolean;
   error: Error | null;
   hasNextPage: boolean;
   searchTerms: SearchModeratorStoreInput;
+  pageInfo: {
+    currentPage: number;
+    pageItemsCount: number;
+    totalPages: number;
+  };
 }
 
 class Stores extends React.Component<PropsType, StateType> {
   state: StateType = {
-    first: RECORDS_PER_PAGE,
-    after: null,
     dataSource: [],
     isLoading: false,
     error: null,
     hasNextPage: false,
     searchTerms: {},
+    pageInfo: {
+      currentPage: 1,
+      pageItemsCount: 10,
+      totalPages: 1,
+    },
   };
 
   columns: Array<ColumnProps<IStore>> = [];
@@ -179,30 +186,25 @@ class Stores extends React.Component<PropsType, StateType> {
         query: STORES_LIST_QUERY,
         fetchPolicy: 'network-only',
         variables: {
-          first: RECORDS_PER_PAGE,
-          after: this.state.after,
+          currentPage: this.state.pageInfo.currentPage,
+          itemsCount: this.state.pageInfo.pageItemsCount,
           searchTerm: this.state.searchTerms,
         },
       })
       .then(({ data }) => {
-        const after = pathOr(
-          null,
-          ['me', 'admin', 'storesSearch', 'pageInfo', 'endCursor'],
-          data,
-        );
-        const hasNextPage = pathOr(
-          null,
-          ['me', 'admin', 'storesSearch', 'pageInfo', 'hasNextPage'],
-          data,
-        );
         const dsChunk = this.prepareDataSource(data);
         this.setState(prevState => ({
-          dataSource: concat(prevState.dataSource, dsChunk),
-          after,
-          hasNextPage,
+          dataSource: dsChunk,
+          pageInfo: pick(
+            ['currentPage', 'pageItemsCount', 'totalPages'],
+            (data.me &&
+              data.me.admin.storesSearchPages &&
+              data.me.admin.storesSearchPages.pageInfo) ||
+              prevState.pageInfo,
+          ),
         }));
       })
-      .catch(err => {
+      .catch((err: Error) => {
         this.setState({ error: err });
       })
       .finally(() => {
@@ -213,8 +215,8 @@ class Stores extends React.Component<PropsType, StateType> {
   prepareDataSource = (data: StoresListQuery): IStore[] => {
     const edges =
       (data.me &&
-        data.me.admin.storesSearch &&
-        data.me.admin.storesSearch.edges) ||
+        data.me.admin.storesSearchPages &&
+        data.me.admin.storesSearchPages.edges) ||
       [];
     return map((edge: StoresListQueryEdge) => {
       const node: StoresListQueryEdgeNode = edge.node;
@@ -306,8 +308,6 @@ class Stores extends React.Component<PropsType, StateType> {
           onApplyFilter={data => {
             this.setState(
               {
-                after: null,
-                dataSource: [],
                 searchTerms: reject(anyPass([isNil, isEmpty]), {
                   name: data.name || null,
                   storeManagerEmail: data.email || null,
@@ -326,18 +326,45 @@ class Stores extends React.Component<PropsType, StateType> {
           rowKey={record => `${record.id}`}
           pagination={false}
           rowClassName={() => styles.row}
-          footer={() =>
-            this.state.hasNextPage && (
-              <Button
-                block
-                type="primary"
-                loading={this.state.isLoading}
-                onClick={this.loadMore}
-              >
-                Load more
-              </Button>
-            )
-          }
+          footer={() => (
+            <Pagination
+              showSizeChanger
+              onShowSizeChange={(current, pageSize) => {
+                this.setState(
+                  {
+                    dataSource: [],
+                    pageInfo: {
+                      ...this.state.pageInfo,
+                      currentPage: current,
+                      pageItemsCount: pageSize,
+                    },
+                  },
+                  () => {
+                    this.loadMore();
+                  },
+                );
+              }}
+              onChange={pageNumber => {
+                this.setState(
+                  {
+                    // dataSource: [],
+                    pageInfo: {
+                      ...this.state.pageInfo,
+                      currentPage: pageNumber,
+                    },
+                  },
+                  () => {
+                    this.loadMore();
+                  },
+                );
+              }}
+              defaultCurrent={this.state.pageInfo.currentPage}
+              total={
+                this.state.pageInfo.totalPages *
+                this.state.pageInfo.pageItemsCount
+              }
+            />
+          )}
         />
       </Spin>
     );

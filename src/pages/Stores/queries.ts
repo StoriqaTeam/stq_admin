@@ -2,17 +2,22 @@ import gql from 'graphql-tag';
 
 const STORES_LIST_QUERY = gql`
   query StoresListQuery(
-    $first: Int
-    $after: ID
+    $currentPage: Int!
+    $itemsCount: Int!
     $searchTerm: SearchModeratorStoreInput!
   ) {
     me {
       id
       admin {
-        storesSearch(first: $first, after: $after, searchTerm: $searchTerm) {
+        storesSearchPages(
+          currentPage: $currentPage
+          itemsCount: $itemsCount
+          searchTerm: $searchTerm
+        ) {
           pageInfo {
-            hasNextPage
-            endCursor
+            currentPage
+            pageItemsCount
+            totalPages
           }
           edges {
             node {

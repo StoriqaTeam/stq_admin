@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
-import { Button, Divider, Alert, Modal } from 'antd';
+import { Button, Divider, Alert, Modal, Pagination } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import {
   map,
@@ -17,6 +17,7 @@ import {
   equals,
   pathOr,
   Lens,
+  pick,
 } from 'ramda';
 
 import UsersTable from './Table';
@@ -31,7 +32,8 @@ import {
 import {
   UsersListQuery,
   UsersListQueryVariables,
-  UsersListQuery_me_admin_usersSearch_edges as UsersListEdges,
+  UsersListQuery_me_admin_usersSearchPages_edges as UsersListEdges,
+  UsersListQuery_me_admin_usersSearchPages_pageInfo as UsersListPageInfo,
 } from './__generated__/UsersListQuery';
 import {
   BlockUserMutation,
@@ -64,13 +66,15 @@ interface PropsType {
 
 interface StateType {
   isLoading: boolean;
-  isLoadingMore: boolean;
-  after: string | null | undefined;
-  hasNextPage: boolean;
   dataSource: IUser[];
   filters: UserFormFilterType;
   error: Error | null;
   openedModalUserId: number | null;
+  pageInfo: {
+    currentPage: number;
+    pageItemsCount: number;
+    totalPages: number;
+  };
 }
 
 const RECORDS_PER_PAGE = 25;
@@ -78,13 +82,15 @@ const RECORDS_PER_PAGE = 25;
 class Users extends React.Component<PropsType, StateType> {
   state: StateType = {
     isLoading: false,
-    isLoadingMore: false,
-    after: null,
-    hasNextPage: false,
     dataSource: [],
     filters: {},
     error: null,
     openedModalUserId: null,
+    pageInfo: {
+      currentPage: 1,
+      pageItemsCount: 10,
+      totalPages: 1,
+    },
   };
 
   columns: Array<ColumnProps<IUser>> = [];
@@ -324,14 +330,14 @@ class Users extends React.Component<PropsType, StateType> {
     );
 
   loadMore = (callback?: () => void) => {
-    this.setState({ isLoadingMore: true, isLoading: true });
+    this.setState({ isLoading: true });
     this.props.client
       .query<UsersListQuery, UsersListQueryVariables>({
         query: USERS_QUERY,
         variables: {
-          first: RECORDS_PER_PAGE,
-          after: this.state.after,
-          searchTerms: {
+          currentPage: this.state.pageInfo.currentPage,
+          itemsCount: this.state.pageInfo.pageItemsCount,
+          searchTerm: {
             email: this.state.filters.email,
             firstName: this.state.filters.firstname,
             lastName: this.state.filters.lastname,
@@ -341,29 +347,27 @@ class Users extends React.Component<PropsType, StateType> {
         fetchPolicy: 'network-only',
       })
       .then(({ data }) => {
-        if (data.me && data.me.admin.usersSearch) {
+        if (data.me && data.me.admin.usersSearchPages) {
           const newDataSourceChunk = this.prepareDatasource(
-            data.me.admin.usersSearch.edges,
+            data.me.admin.usersSearchPages.edges,
           );
 
           this.setState(prevState => {
             return {
               dataSource: concat(prevState.dataSource, newDataSourceChunk),
-              hasNextPage:
+              pageInfo: pick(
+                ['currentPage', 'pageItemsCount', 'totalPages'],
                 (data.me &&
-                  data.me.admin.usersSearch &&
-                  data.me.admin.usersSearch.pageInfo.hasNextPage) ||
-                false,
-              after:
-                data.me &&
-                data.me.admin.usersSearch &&
-                data.me.admin.usersSearch.pageInfo.endCursor,
+                  data.me.admin.usersSearchPages &&
+                  data.me.admin.usersSearchPages.pageInfo) ||
+                  prevState.pageInfo,
+              ),
             };
           });
         }
       })
       .finally(() => {
-        this.setState({ isLoadingMore: false, isLoading: false });
+        this.setState({ isLoading: false });
         if (callback) {
           callback();
         }
@@ -375,7 +379,6 @@ class Users extends React.Component<PropsType, StateType> {
       {
         filters: data,
         dataSource: [],
-        after: null,
       },
       () => {
         this.loadMore();
@@ -438,22 +441,45 @@ class Users extends React.Component<PropsType, StateType> {
           rowClassName={() => styles.row}
           columns={this.columns}
           dataSource={this.state.dataSource}
-          footer={() => {
-            return (
-              this.state.hasNextPage && (
-                <Button
-                  block
-                  type="primary"
-                  onClick={() => {
+          footer={() => (
+            <Pagination
+              showSizeChanger
+              onShowSizeChange={(current, pageSize) => {
+                this.setState(
+                  {
+                    dataSource: [],
+                    pageInfo: {
+                      ...this.state.pageInfo,
+                      currentPage: current,
+                      pageItemsCount: pageSize,
+                    },
+                  },
+                  () => {
                     this.loadMore();
-                  }}
-                  loading={this.state.isLoadingMore}
-                >
-                  Load more
-                </Button>
-              )
-            );
-          }}
+                  },
+                );
+              }}
+              onChange={pageNumber => {
+                this.setState(
+                  {
+                    dataSource: [],
+                    pageInfo: {
+                      ...this.state.pageInfo,
+                      currentPage: pageNumber,
+                    },
+                  },
+                  () => {
+                    this.loadMore();
+                  },
+                );
+              }}
+              defaultCurrent={this.state.pageInfo.currentPage}
+              total={
+                this.state.pageInfo.totalPages *
+                this.state.pageInfo.pageItemsCount
+              }
+            />
+          )}
         />
       </React.Fragment>
     );
