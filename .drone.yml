@@ -28,7 +28,7 @@ pipeline:
     environment:
     - GRAPHQL_URL=https://stable.stq.cloud/graphql
     - PRODUCT_URL=https://stable.stq.cloud
-    - APP_SUBPATH=/admin
+    - APP_SUBPATH=/storiqatools
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn ci
@@ -93,7 +93,7 @@ pipeline:
     environment:
     - GRAPHQL_URL=https://stable.stq.cloud/graphql
     - PRODUCT_URL=https://stable.stq.cloud
-    - APP_SUBPATH=/admin
+    - APP_SUBPATH=/storiqatools
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build
@@ -142,7 +142,7 @@ pipeline:
     environment:
     - GRAPHQL_URL=https://stage.stq.cloud/graphql
     - PRODUCT_URL=https://stage.stq.cloud
-    - APP_SUBPATH=/admin
+    - APP_SUBPATH=/storiqatools
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build
@@ -188,7 +188,7 @@ pipeline:
     environment:
     - GRAPHQL_URL=https://production.stq.cloud/graphql
     - PRODUCT_URL=https://production.stq.cloud
-    - APP_SUBPATH=/admin
+    - APP_SUBPATH=/storiqatools
     commands:
     - yarn -s --no-progress --non-interactive --production=false
     - yarn build
