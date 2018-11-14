@@ -32,14 +32,14 @@ _dont forget update nginx config too_
 
 ## Production build
 
-Make sure that you are defined `APP_SUBPATH`, `PRODUCT_URL`, `GRAPHQL_URL` env-vars, then run
+Make sure that you have defined `APP_SUBPATH`, `PRODUCT_URL`, `GRAPHQL_URL` env-vars, then run
 
 `yarn build`
 
-Check prod build:
+### Check prod build:
 
-Make sure that you are defined `APP_SUBPATH`, `PRODUCT_URL`, `GRAPHQL_URL` env-vars, then run
+Make sure that you have defined `APP_SUBPATH`, `PRODUCT_URL`, `GRAPHQL_URL` env-vars, then run
 
 `yarn prod:check`
 
-then open http://localhost/admin in browser
+then open http://localhost/$APP_SUBPATH in browser
