@@ -1,4 +1,5 @@
 ## Dev mode
+
 `yarn dev`
 
 then open http://localhost:9000
@@ -11,7 +12,6 @@ The following command will fetch schema from stable.stq.cloud
 
 `GRAPHQL_URL="https://stable.stq.cloud/graphql" yarn build`
 
-
 ## Define GraphQL-endpoint
 
 For set endpoint for graphql just add
@@ -23,12 +23,23 @@ before your yarn-script command
 
 By default endpoint value is `https://nightly.stq.cloud/graphql`
 
+## Define subpath for app
+
+export `APP_SUBPATH` var with value for desired app subpath before build, default is '/'
+(your app will be available by path `<domain>/<APP_SUBPATH>`)
+
+_dont forget update nginx config too_
+
 ## Production build
+
+Make sure that you are defined `APP_SUBPATH`, `PRODUCT_URL`, `GRAPHQL_URL` env-vars, then run
 
 `yarn build`
 
 Check prod build:
 
-`yarn build && docker build -t storiqateam/stq-admin . && docker run -it --rm -p 80:80 storiqateam/stq-admin`
+Make sure that you are defined `APP_SUBPATH`, `PRODUCT_URL`, `GRAPHQL_URL` env-vars, then run
+
+`yarn prod:check`
 
 then open http://localhost/admin in browser

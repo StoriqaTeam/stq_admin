@@ -50,11 +50,12 @@
     "webpack-dev-server": "3.1.8"
   },
   "scripts": {
-    "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --env.productUrl=${PRODUCT_URL-https://nightly.stq.cloud}",
+    "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --env.productUrl=${PRODUCT_URL-https://nightly.stq.cloud} --env.appSubpath=${APP_SUBPATH-/}",
     "dev": "yarn downloadSchema && yarn webpack-dev-server --env.development --env.endpoint=${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --env.productUrl=${PRODUCT_URL-https://nightly.stq.cloud} --config './config/webpack.config.js' --watch --host 127.0.0.1",
     "codegen": "yarn downloadSchema && yarn apollo codegen:generate --schema=schema.json --target=typescript --addTypename",
     "downloadSchema": "rm -f ./schema.json; yarn apollo-codegen introspect-schema ${GRAPHQL_URL-https://nightly.stq.cloud/graphql} --output schema.json",
-    "ci": "echo 'Implement this, pleaaaaase'"
+    "ci": "echo 'Implement this, pleaaaaase'",
+    "prod:check": "yarn build && docker build -t storiqateam/stq-admin . && docker run -it --rm -p 80:80 storiqateam/stq-admin"
   },
   "resolutions": {
     "graphql": "14.0.2"
