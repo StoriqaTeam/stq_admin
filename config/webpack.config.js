@@ -10,7 +10,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, '../dist'),
       filename: 'bundle.js',
-      publicPath: env.production ? '/admin' : '/',
+      publicPath: env.appSubpath,
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -75,9 +75,7 @@ module.exports = (env, argv) => {
     devtool: env.production ? 'eval' : 'inline-source-map',
     plugins: [
       new webpack.DefinePlugin({
-        'process.env.PUBLIC_PATH': env.production
-          ? JSON.stringify('/admin')
-          : JSON.stringify('/'),
+        'process.env.PUBLIC_PATH': JSON.stringify(env.appSubpath),
         'process.env.GRAPHQL_URL':
           JSON.stringify(env.endpoint) ||
           JSON.stringify('https://nightly.stq.cloud/graphql'),

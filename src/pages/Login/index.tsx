@@ -42,7 +42,7 @@ class LoginForm extends React.PureComponent<Props> {
       <Query<LoginMe> query={LOGIN_ME} fetchPolicy="network-only">
         {({ loading: qLoading, data: qData, error: qError, client }) => {
           return qData && qData.me ? (
-            <Redirect to={'/admin'} />
+            <Redirect to={`${process.env.PUBLIC_PATH}`} />
           ) : (
             <Mutation<LoginMutation, LoginMutationVariables>
               mutation={LOGIN_MUTATION}
