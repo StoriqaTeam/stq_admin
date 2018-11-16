@@ -60,6 +60,12 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               companies
             </Link>
           </Menu.Item>
+          <Menu.Item key="5">
+            <Icon type="tag" />
+            <Link className={styles.menuLink} to="/attributes">
+              Attributes
+            </Link>
+          </Menu.Item>
         </Menu>
       </Sider>
     );

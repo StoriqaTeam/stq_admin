@@ -12,6 +12,7 @@ import {
   AddCategory,
   CategoryAttributes,
 } from '../pages/Categories';
+import { Attributes, AddAttribute, EditAttribute } from '../pages/Attributes';
 import { Goods } from '../pages/Goods';
 import {
   DeliveryCompanies,
@@ -61,6 +62,14 @@ class Entry extends React.PureComponent<{}> {
                     path="/categories/:id/attributes"
                     exact
                     component={CategoryAttributes}
+                  />
+
+                  <Route path="/attributes" exact component={Attributes} />
+                  <Route path="/attributes/add" exact component={AddAttribute} />
+                  <Route
+                    path="/attributes/:id/edit"
+                    exact
+                    component={EditAttribute}
                   />
 
                   <Route path="/delivery" exact component={DeliveryCompanies} />

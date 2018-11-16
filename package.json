@@ -5,6 +5,7 @@
   "license": "MIT",
   "sideEffects": false,
   "dependencies": {
+    "@types/react-beautiful-dnd": "7.1.2",
     "antd": "3.9.2",
     "apollo-boost": "0.1.16",
     "date-fns": "1.29.0",
@@ -12,6 +13,7 @@
     "ramda": "0.25.0",
     "react": "16.5.1",
     "react-apollo": "2.1.11",
+    "react-beautiful-dnd": "10.0.1",
     "react-dom": "16.5.1",
     "react-router-dom": "4.3.1"
   },
