@@ -5,7 +5,6 @@ import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
 import { withRouter, RouteComponentProps } from 'react-router';
 import {
-  concat,
   map,
   pathOr,
   findIndex,
@@ -18,6 +17,7 @@ import {
   isEmpty,
   anyPass,
   pick,
+  equals,
 } from 'ramda';
 
 import StoresTable, { IStore } from './Table';
@@ -140,7 +140,7 @@ class Stores extends React.Component<PropsType, StateType> {
                   item => (
                     <Menu.Item key={item}>{item}</Menu.Item>
                   ),
-                  Object.keys(Status),
+                  reject(equals(Status.DRAFT), Object.keys(Status) as Status[]),
                 )}
               </Menu>
             }
@@ -294,8 +294,6 @@ class Stores extends React.Component<PropsType, StateType> {
     switch (filterStatus) {
       case StatusFilter.PUBLISHED:
         return Status.PUBLISHED;
-      case StatusFilter.DRAFT:
-        return Status.DRAFT;
       default:
         return null;
     }
