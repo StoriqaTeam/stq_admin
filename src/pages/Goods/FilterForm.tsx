@@ -8,7 +8,6 @@ import * as styles from './FilterForm.scss';
 export enum StatusFilter {
   ALL = 'ALL',
   PUBLISHED = 'PUBLISHED',
-  DRAFT = 'DRAFT',
 }
 
 export interface GoodsFilterType {
