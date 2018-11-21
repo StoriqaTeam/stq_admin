@@ -68,7 +68,7 @@ class AddAttribute extends React.Component<PropsType, StateType> {
       })
       .then(({ data }: any) => {
         const attributeId = pathOr(null, ['createAttribute', 'id'], data);
-        if (attributeId) {
+        if (attributeId && this.mounted) {
           this.props.history.push('/attributes');
         }
       })

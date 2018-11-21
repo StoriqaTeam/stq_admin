@@ -145,7 +145,7 @@ class EditAttribute extends React.PureComponent<PropsType, StateType> {
       })
       .then(({ data }) => {
         const attribute = pathOr(null, ['createAttributeValue', 'attribute'], data);
-        if (attribute) {
+        if (attribute && this.mounted) {
           this.setState({ attribute });
         }
       })
@@ -176,7 +176,7 @@ class EditAttribute extends React.PureComponent<PropsType, StateType> {
       })
       .then(({ data }) => {
         const attribute = pathOr(null, ['updateAttributeValue', 'attribute'], data);
-        if (attribute) {
+        if (attribute && this.mounted) {
           this.setState({ attribute });
         }
       })
@@ -205,7 +205,7 @@ class EditAttribute extends React.PureComponent<PropsType, StateType> {
       .then(({ data }) => {
         if (data && data.deleteAttributeValue && data.deleteAttributeValue.mock) {
           const { attribute } = this.state;
-          if (attribute) {
+          if (attribute && this.mounted) {
             this.setState({
               attribute: { ...attribute, values: filter(item => item.rawId !== id, attribute.values || []) },
             });
