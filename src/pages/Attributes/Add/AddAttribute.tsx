@@ -3,7 +3,7 @@ import { ApolloConsumer } from 'react-apollo';
 import ApolloClient from 'apollo-client';
 import { pathOr } from 'ramda';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { Button, Icon } from 'antd';
+import { Button, Icon, Spin } from 'antd';
 
 import CommonForm from '../Form';
 import {
@@ -12,6 +12,7 @@ import {
 import {
   AddAttributeCreateAttributeMutation,
   AddAttributeCreateAttributeMutationVariables,
+  AddAttributeCreateAttributeMutation_createAttribute_values as Values
 } from './__generated__/AddAttributeCreateAttributeMutation';
 import { AttributeMetaFieldInput, AttributeType, TranslationInput } from '../../../../__generated__/globalTypes';
 
@@ -23,6 +24,7 @@ interface AttributeData {
   name: TranslationInput[];
   valueType: AttributeType;
   metaField: AttributeMetaFieldInput | null;
+  values: Values[];
 }
 
 interface StateType {
@@ -60,6 +62,7 @@ class AddAttribute extends React.Component<PropsType, StateType> {
             name: attributteData.name,
             metaField: attributteData.metaField,
             valueType: attributteData.valueType,
+            values: attributteData.values,
           },
         },
       })
@@ -78,7 +81,7 @@ class AddAttribute extends React.Component<PropsType, StateType> {
 
   render() {
     return (
-      <div>
+      <Spin spinning={this.state.isLoading}>
         <Button
           onClick={() => {
             this.props.history.push('/attributes');
@@ -92,7 +95,7 @@ class AddAttribute extends React.Component<PropsType, StateType> {
           isLoading={this.state.isLoading}
           onSave={this.handleSave}
         />
-      </div>
+      </Spin>
     );
   }
 }

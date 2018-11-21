@@ -21,6 +21,14 @@ const EDIT_ATTRIBUTE_ATTRIBUTES_LIST_QUERY = gql`
           }
           uiElement
         }
+        values {
+          rawId
+          code
+          translations {
+              lang
+              text
+            }
+        }
       }
     }
     attributes {
@@ -40,6 +48,14 @@ const EDIT_ATTRIBUTE_ATTRIBUTES_LIST_QUERY = gql`
           }
         }
         uiElement
+      }
+      values {
+        rawId
+        code
+        translations {
+          lang
+          text
+        }
       }
     }
   }
@@ -69,4 +85,100 @@ const UPDATE_ATTRIBUTE_MUTATION = gql`
   }
 `;
 
-export { EDIT_ATTRIBUTE_ATTRIBUTES_LIST_QUERY, UPDATE_ATTRIBUTE_MUTATION };
+const CREATE_ATTRIBUTE_VALUE_MUTATION = gql`
+  mutation CreateAttributeValueMutation($input: CreateAttributeValueInput!) {
+    createAttributeValue(input: $input) {
+      rawId
+      attrRawId
+      code
+      translations {
+        lang
+        text
+      }
+      attribute {
+        id
+        rawId
+        name {
+          lang
+          text
+        }
+        valueType
+        metaField {
+          values
+          translatedValues {
+            translations {
+              lang
+              text
+            }
+          }
+          uiElement
+        }
+        values {
+          rawId
+          code
+          translations {
+            lang
+            text
+          }
+        }
+      }
+    }
+  }
+`;
+
+const UPDATE_ATTRIBUTE_VALUE_MUTATION = gql`
+  mutation UpdateAttributeValueMutation($input: UpdateAttributeValueInput!) {
+    updateAttributeValue(input: $input) {
+      rawId
+      attrRawId
+      code
+      translations {
+        lang
+        text
+      }
+      attribute {
+        id
+        rawId
+        name {
+          lang
+          text
+        }
+        valueType
+        metaField {
+          values
+          translatedValues {
+            translations {
+              lang
+              text
+            }
+          }
+          uiElement
+        }
+        values {
+          rawId
+          code
+          translations {
+            lang
+            text
+          }
+        }
+      }
+    }
+  }
+`;
+
+const DELETE_ATTRIBUTE_VALUE_MUTATION = gql`
+  mutation DeleteAttributeValueMutation($input: DeleteAttributeValueInput!) {
+    deleteAttributeValue(input: $input) {
+      mock
+    }
+  }
+`;
+
+export {
+  EDIT_ATTRIBUTE_ATTRIBUTES_LIST_QUERY,
+  UPDATE_ATTRIBUTE_MUTATION,
+  CREATE_ATTRIBUTE_VALUE_MUTATION,
+  UPDATE_ATTRIBUTE_VALUE_MUTATION,
+  DELETE_ATTRIBUTE_VALUE_MUTATION,
+};

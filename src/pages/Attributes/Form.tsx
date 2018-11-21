@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Form, Spin, Input, Row, Col, Button, Radio, Tag, Icon } from 'antd';
-import { map, filter, contains, assoc, last, head, toPairs, isEmpty, reduce, dissoc } from 'ramda';
+import { Form, Input, Row, Col, Button, Radio, Tag, Icon, Modal } from 'antd';
+import { map, filter, assoc, last, head, toPairs, reduce, isNil, omit, fromPairs } from 'ramda';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 import {
@@ -17,25 +17,34 @@ interface TranslatedValue {
   translations: TranslationInput[];
 }
 
+interface NewValue {
+  id: number;
+  code: string;
+  translations: TranslationInput[];
+}
+
 interface StateType {
-  id: string | null;
   translations: {
     [key: string]: string;
   };
   inputVisible: boolean;
   inputValue: string;
-  values: string[];
   translatedValues: TranslatedValue[];
   valuesTranslations: {
     [key: string]: string;
   };
-  valuesType: 'UNTRANSLATABLE' | 'TRANSLATABLE';
   uiElement: UIType;
+  newValues: NewValue[];
+  code: string | null;
+  editableId: number | string | null;
 }
 
 interface PropsType {
   isLoading: boolean;
   attribute?: Attribute;
+  onCreateAttributeValue?: (data: any) => void;
+  onUpdateAttributeValue?: (data: any) => void;
+  onDeleteAttributeValue?: (id: number) => void;
   onSave: (data: any) => void;
 }
 
@@ -48,41 +57,62 @@ class CommonForm extends React.Component<PropsType, StateType> {
       inputVisible: false,
       inputValue: '',
       valuesTranslations: {},
-      id: null,
       translations: {},
-      values: [],
-      valuesType: 'UNTRANSLATABLE',
       translatedValues: [],
       uiElement: UIType.COMBOBOX,
+      newValues: [],
+      code: null,
+      editableId: null,
     };
     if (attribute && attribute.metaField) {
-      const { values, translatedValues } = attribute.metaField;
+      const { translatedValues } = attribute.metaField;
+      const { values } = attribute;
       prepareData = {
         ...prepareData,
-        id: attribute.id,
         translations: reduce(
           (acc, item) => assoc(item.lang, item.text, acc),
           {},
           attribute.name,
         ),
-        values: values || [],
-        valuesType: values ? 'UNTRANSLATABLE' : 'TRANSLATABLE',
         translatedValues: translatedValues ? translatedValues.map((item, index) => ({
           id: `${Date.now()}${index}`,
           translations: map(translation => ({ lang: translation.lang, text: translation.text }), item.translations),
         })) : [],
         uiElement: attribute.metaField.uiElement,
+        newValues: map(item => ({
+          id: item.rawId,
+          code: item.code,
+          translations: item.translations || [],
+        }), values || []),
       };
     }
 
     this.state = prepareData;
   }
+  static getDerivedStateFromProps(nextProps: PropsType, prevState: StateType) {
+    const { attribute } = nextProps;
+    if (attribute) {
+      const newValues = map(item => ({
+        id: item.rawId,
+        code: item.code,
+        translations: item.translations || [],
+      }), attribute.values || []);
+      if (JSON.stringify(newValues) !== JSON.stringify(prevState.newValues)) {
+        return {
+          newValues,
+          inputVisible: false,
+          valuesTranslations: {},
+          code: null,
+          editableId: null,
+        };
+      }
+    }
+    return null;
+  }
 
   showInput = () => {
     this.setState({ inputVisible: true }, () => {
-      if (this.state.valuesType === 'UNTRANSLATABLE') {
-        this.inputRef.current!.focus();
-      }
+      // this.inputRef.current!.focus();
     });
   };
 
@@ -90,26 +120,9 @@ class CommonForm extends React.Component<PropsType, StateType> {
     this.setState({ uiElement });
   };
 
-  handleInputChange = (e: any) => {
-    this.setState({ inputValue: e.target.value });
-  };
-
-  handleInputConfirm = () => {
-    this.setState((prevState: StateType) => {
-      const { values, inputValue } = prevState;
-      return ({
-        values: inputValue && !contains(inputValue, values)
-          ? [...values, inputValue]
-          : values,
-        inputVisible: false,
-        inputValue: '',
-      });
-    });
-  };
-
   handleInputsConfirm = () => {
     this.setState((prevState: StateType) => {
-      const { translatedValues, valuesTranslations } = prevState;
+      const { translatedValues, valuesTranslations, newValues, code, editableId } = prevState;
       const translatedValue = {
         id: Date.now(),
         translations: filter(item => item.text !== '', map(
@@ -119,13 +132,52 @@ class CommonForm extends React.Component<PropsType, StateType> {
           }),
           toPairs(valuesTranslations))),
       };
-      if (isEmpty(translatedValue.translations)) {
+      const translations = filter(item => item.text !== '', map(
+        item => ({
+          lang: head(item),
+          text: last(item),
+        }),
+        toPairs(valuesTranslations)));
+      if (!code) {
         return prevState;
       }
+      const value = {
+        id: Date.now(),
+        code,
+        translations,
+      };
+
+      const { attribute, onCreateAttributeValue, onUpdateAttributeValue } = this.props;
+
+      if (attribute) {
+        if (editableId && onUpdateAttributeValue) {
+          onUpdateAttributeValue({
+            valueId: editableId,
+            attributeId: attribute.rawId,
+            code,
+            translations,
+          });
+          return;
+        }
+        if (!editableId && onCreateAttributeValue) {
+          onCreateAttributeValue({
+            attributeId: attribute.rawId,
+            code,
+            translations,
+          });
+        }
+        return;
+      }
+
       return ({
         translatedValues: [...translatedValues, translatedValue],
+        newValues: editableId
+          ? map(item => editableId === item.id ? value : item, newValues)
+          : [...newValues, value],
         inputVisible: false,
         valuesTranslations: {},
+        code: null,
+        editableId: null,
       });
     });
   };
@@ -134,6 +186,8 @@ class CommonForm extends React.Component<PropsType, StateType> {
     this.setState({
       inputVisible: false,
       valuesTranslations: {},
+      editableId: null,
+      code: null,
     });
   };
 
@@ -145,28 +199,35 @@ class CommonForm extends React.Component<PropsType, StateType> {
     return result;
   };
 
-  handleDragEnd = (result: any) => {
-    this.setState((prevState: StateType) => ({
-      values: this.reorder(prevState.values, result.source.index, result.destination.index),
-    }));
-  };
-
   handleDragEndTranslatable = (result: any) => {
+    if (!result.source || !result.destination || this.props.attribute) {
+      return;
+    }
     this.setState((prevState: StateType) => ({
-      translatedValues: this.reorder(prevState.translatedValues, result.source.index, result.destination.index),
+      newValues: this.reorder(prevState.newValues, result.source.index, result.destination.index),
     }));
   };
 
-  handleCloseTag = (removedTag: string) => {
-    this.setState({ values: filter(item => removedTag !== item, this.state.values) });
+  handleDeleteItem = (id: number) => {
+    const { attribute, onDeleteAttributeValue } = this.props;
+    if (attribute && onDeleteAttributeValue) {
+      onDeleteAttributeValue(id);
+      return;
+    }
+
+    this.setState((prevState: StateType) => ({
+      newValues: filter(item => id !== item.id, prevState.newValues),
+    }));
   };
 
-  handleCloseItem = (id: string) => {
-    this.setState({ translatedValues: filter(item => id !== item.id, this.state.translatedValues) });
-  };
-
-  handleValuesTypeChange = (value: 'UNTRANSLATABLE' | 'TRANSLATABLE') => {
-    this.setState({ valuesType: value, inputVisible: false });
+  handleEditItem = (value: NewValue) => {
+    const translations: any = map(item => ([item.lang, item.text]), value.translations);
+    this.setState({
+      editableId: value.id,
+      code: value.code,
+      inputVisible: true,
+      valuesTranslations: fromPairs(translations),
+    });
   };
 
   handleTranslatableValuesChange = (lang: Language) => (
@@ -192,21 +253,11 @@ class CommonForm extends React.Component<PropsType, StateType> {
   };
 
   handleSave = () => {
+    const { attribute } = this.props;
     const {
-      id,
       translations,
-      values,
       uiElement,
-      translatedValues,
-      valuesType,
     } = this.state;
-    if (
-      isEmpty(translations) ||
-      valuesType === 'UNTRANSLATABLE' && isEmpty(values) ||
-      valuesType === 'TRANSLATABLE' && isEmpty(translatedValues)
-    ) {
-      return;
-    }
     const name = map(
       item => ({
         lang: head(item),
@@ -214,23 +265,31 @@ class CommonForm extends React.Component<PropsType, StateType> {
       }),
       toPairs(translations),
     ) as TranslationInput[];
+    const newValues = map(item => ({
+      code: item.code,
+      translations: item.translations,
+    }), this.state.newValues);
     const data = {
       valueType: 'STR',
       name,
+      values: map(item => ({
+        code: item.code,
+        translations: item.translations,
+      }), newValues),
       metaField: {
-        values: valuesType === 'UNTRANSLATABLE' ? values : null,
         uiElement,
-        translatedValues: valuesType === 'TRANSLATABLE'
-          ? map(item => item.translations, translatedValues)
-          : null,
       },
     };
-    this.props.onSave(id ? { ...dissoc('valueType', data), id } : data);
+    this.props.onSave(attribute ? { ...omit(['valueType', 'values'], data), id: attribute.id } : data);
+  };
+
+  handleNewValueCodeChange = (e: any) => {
+    this.setState({ code: e.target.value });
   };
 
   render() {
     return (
-      <Spin spinning={this.props.isLoading}>
+      <div>
         <Form layout="horizontal">
           <Row gutter={24}>
             <Form.Item label="Attribute name" />
@@ -260,153 +319,110 @@ class CommonForm extends React.Component<PropsType, StateType> {
               <Radio.Button value="COLOR_PICKER">Color Picker</Radio.Button>
             </Radio.Group>
           </Form.Item>
-          <Form.Item label="Values type">
-            <Radio.Group
-              onChange={(e: any) => { this.handleValuesTypeChange(e.target.value); }}
-              value={this.state.valuesType}
-            >
-              <Radio.Button value="UNTRANSLATABLE">Untranslatable</Radio.Button>
-              <Radio.Button value="TRANSLATABLE">Translatable</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
           <Form.Item label="Values">
-            {this.state.inputVisible && (
-              <div>
-                {this.state.valuesType === 'UNTRANSLATABLE' ?
-                  <Input
-                    ref={this.inputRef}
-                    type="text"
-                    size="small"
-                    style={{ width: 78 }}
-                    value={this.state.inputValue}
-                    onChange={this.handleInputChange}
-                    onBlur={this.handleInputConfirm}
-                    onPressEnter={this.handleInputConfirm}
-                  /> :
-                  <div>
-                    <Row gutter={24}>
-                      {map(
-                        lang => (
-                          <Col span={4} key={lang} style={{  }}>
-                            <span style={{ marginRight: '0' }}>{`${lang}:`}</span>
-                            <Input
-                              size="small"
-                              value={this.state.valuesTranslations[lang]}
-                              onChange={this.handleTranslatableValuesChange(
-                                lang as Language,
-                              )}
-                            />
-                          </Col>
-                        ),
-                        Object.keys(Language),
-                      )}
-                    </Row>
-                    <Tag
-                      onClick={this.handleInputsConfirm}
-                      style={{ background: '#fff', borderStyle: 'dashed' }}
-                    >
-                      <Icon type="plus" /> Add
-                    </Tag>
-                    <Tag
-                      color="red"
-                      onClick={this.handleInputsClosed}
-                      style={{ background: '#fff', borderStyle: 'dashed' }}
-                    >
-                      Cancel
-                    </Tag>
+            <Tag
+              onClick={this.showInput}
+              style={{ background: '#fff', borderStyle: 'dashed' }}
+            >
+              <Icon type="plus" /> New Value
+            </Tag>
+            <DragDropContext onDragEnd={this.handleDragEndTranslatable}>
+              <Droppable droppableId="droppable">
+                {(providedDroppable) => (
+                  <div
+                    ref={providedDroppable.innerRef}
+                    style={{ display: 'block' }}
+                    {...providedDroppable.droppableProps}
+                  >
+                    {this.state.newValues.map((item: NewValue, index: number) => (
+                      <Draggable
+                        isDragDisabled={!isNil(this.props.attribute)}
+                        key={item.id}
+                        draggableId={`${item.id}`}
+                        index={index}
+                      >
+                        {(providedDraggable) => (
+                          <div
+                            ref={providedDraggable.innerRef}
+                            style={{ display: 'flex' }}
+                            {...providedDraggable.draggableProps}
+                            {...providedDraggable.dragHandleProps}
+                          >
+                            <div>
+                              <span>Code: </span>
+                              <Tag color="blue">{item.code}</Tag>
+                              {map(value => (
+                                <React.Fragment key={`${index}${value.lang}`}>
+                                  <span>{`${value.lang}: `}</span>
+                                  <Tag>{value.text}</Tag>
+                                </React.Fragment>
+                              ), item.translations)}
+                              <Button
+                                shape="circle"
+                                icon="edit"
+                                size="small"
+                                onClick={() => this.handleEditItem(item)}
+                              />
+                              <Button
+                                shape="circle"
+                                icon="close"
+                                size="small"
+                                onClick={() => this.handleDeleteItem(item.id)}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {providedDroppable.placeholder}
                   </div>
-                }
-              </div>
-            )}
-            {!this.state.inputVisible && (
-              <Tag
-                onClick={this.showInput}
-                style={{ background: '#fff', borderStyle: 'dashed' }}
-              >
-                <Icon type="plus" /> New Value
-              </Tag>
-            )}
-            {this.state.valuesType === 'UNTRANSLATABLE' &&
-              <DragDropContext onDragEnd={this.handleDragEnd}>
-                <Droppable droppableId="droppable" direction="horizontal">
-                  {(providedDroppable) => (
-                    <div
-                      ref={providedDroppable.innerRef}
-                      style={{ display: 'flex' }}
-                      {...providedDroppable.droppableProps}
-                    >
-                      {this.state.values.map((item: string, index: number) => (
-                        <Draggable key={item} draggableId={item} index={index}>
-                          {(providedDraggable) => (
-                            <div
-                              ref={providedDraggable.innerRef}
-                              {...providedDraggable.draggableProps}
-                              {...providedDraggable.dragHandleProps}
-                            >
-                              <Tag
-                                closable
-                                color="blue"
-                                afterClose={() => this.handleCloseTag(item)}
-                              >
-                                {item}
-                              </Tag>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {providedDroppable.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            }
-            {this.state.valuesType === 'TRANSLATABLE' &&
-              <DragDropContext onDragEnd={this.handleDragEndTranslatable}>
-                <Droppable droppableId="droppable">
-                  {(providedDroppable) => (
-                    <div
-                      ref={providedDroppable.innerRef}
-                      style={{ display: 'block' }}
-                      {...providedDroppable.droppableProps}
-                    >
-                      {this.state.translatedValues.map((item: TranslatedValue, index: number) => (
-                        <Draggable key={item.id} draggableId={item.id} index={index}>
-                          {(providedDraggable) => (
-                            <div
-                              ref={providedDraggable.innerRef}
-                              style={{ display: 'flex' }}
-                              {...providedDraggable.draggableProps}
-                              {...providedDraggable.dragHandleProps}
-                            >
-                              <div>
-                                {map(value => (
-                                  <React.Fragment key={`${index}${value.lang}`}>
-                                    <span>{`${value.lang}: `}</span>
-                                    <Tag>{value.text}</Tag>
-                                  </React.Fragment>
-                                ), item.translations)}
-                                <Button
-                                  shape="circle"
-                                  icon="close"
-                                  size="small"
-                                  onClick={() => this.handleCloseItem(item.id)}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {providedDroppable.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            }
+                )}
+              </Droppable>
+            </DragDropContext>
           </Form.Item>
           <Form.Item />
         </Form>
         <Button onClick={this.handleSave}>Save</Button>
-      </Spin>
+        <Modal
+          visible={this.state.inputVisible}
+          onOk={this.handleInputsConfirm}
+          onCancel={this.handleInputsClosed}
+          okText={this.state.editableId ? 'Save' : 'Add'}
+          okButtonProps={{ loading: this.props.isLoading }}
+          cancelText="Cancel"
+        >
+          <div>
+            <Row gutter={24}>
+              <Col span={12}>
+                <span style={{ marginRight: '0' }}>Code</span>
+                <Input
+                  ref={this.inputRef}
+                  size="small"
+                  value={this.state.code || ''}
+                  onChange={this.handleNewValueCodeChange}
+                />
+              </Col>
+            </Row>
+            <Row gutter={24} style={{ marginTop: '20px' }}>
+              {map(
+                lang => (
+                  <Col span={12} key={lang} style={{ marginTop: '10px' }}>
+                    <span style={{ marginRight: '0' }}>{`${lang}:`}</span>
+                    <Input
+                      size="small"
+                      value={this.state.valuesTranslations[lang]}
+                      onChange={this.handleTranslatableValuesChange(
+                        lang as Language,
+                      )}
+                    />
+                  </Col>
+                ),
+                Object.keys(Language),
+              )}
+            </Row>
+          </div>
+        </Modal>
+      </div>
     );
   }
 }

@@ -20,6 +20,13 @@ const ADD_ATTRIBUTE_CREATE_ATTRIBUTE = gql`
         }
         uiElement
       }
+      values {
+        code
+        translations {
+          lang
+          text
+        }
+      }
     }
   }
 `;
