@@ -14,6 +14,8 @@ import {
   whereEq,
   assoc,
   lensIndex,
+  reject,
+  equals,
 } from 'ramda';
 import { parse, format } from 'date-fns';
 
@@ -100,7 +102,7 @@ class Goods extends React.Component<PropsType, StateType> {
                   item => (
                     <Menu.Item key={item}>{item}</Menu.Item>
                   ),
-                  Object.keys(Status),
+                  reject(equals(Status.DRAFT), Object.keys(Status) as Status[]),
                 )}
               </Menu>
             }
