@@ -56,9 +56,9 @@ const STORES_LIST_QUERY = gql`
   }
 `;
 
-const STORE_PUBLISH_MUTATION = gql`
-  mutation PublishStoreMutation($id: Int!) {
-    publishStore(id: $id) {
+const SET_MODERATION_STATUS_FOR_STORE_MUTATION = gql`
+  mutation SetStoreModerationStatus($id: ID!, $status: Status!) {
+    setModerationStatusStore(input: { id: $id, status: $status }) {
       id
       rawId
       status
@@ -66,14 +66,4 @@ const STORE_PUBLISH_MUTATION = gql`
   }
 `;
 
-const STORE_DRAFT_MUTATION = gql`
-  mutation DraftStoreMutation($id: Int!) {
-    draftStore(id: $id) {
-      id
-      rawId
-      status
-    }
-  }
-`;
-
-export { STORES_LIST_QUERY, STORE_PUBLISH_MUTATION, STORE_DRAFT_MUTATION };
+export { STORES_LIST_QUERY, SET_MODERATION_STATUS_FOR_STORE_MUTATION };

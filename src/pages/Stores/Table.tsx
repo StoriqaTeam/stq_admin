@@ -4,6 +4,7 @@ import { Status } from '../../../__generated__/globalTypes';
 
 export interface IStore {
   id: number;
+  base64ID: string;
   name: string;
   status: Status;
   createdAt: Date;

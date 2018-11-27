@@ -8,7 +8,10 @@ import * as styles from './FilterForm.scss';
 export enum StatusFilter {
   ALL = 'ALL',
   PUBLISHED = 'PUBLISHED',
-  // DRAFT = 'DRAFT',
+  DRAFT = 'DRAFT',
+  MODERATION = 'MODERATION',
+  DECLINE = 'DECLINE',
+  BLOCKED = 'BLOCKED',
 }
 
 export interface StoresFormFilterType {
