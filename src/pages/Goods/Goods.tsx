@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Spin, Button, Icon, Dropdown, Menu, Modal } from 'antd';
+import { Spin, Button, Icon, Dropdown, Menu, Modal, message } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
-import ApolloClient from 'apollo-client';
+import ApolloClient, { ApolloError } from 'apollo-client';
 import { withRouter, RouteComponentProps } from 'react-router';
 import {
   propOr,
@@ -24,8 +24,7 @@ import Subtable from './Subtable';
 import FilterForm, { GoodsFilterType, StatusFilter } from './FilterForm';
 import {
   GOODS_BY_STORE_ID_QUERY,
-  PUBLISH_BASE_PRODUCT,
-  DRAFT_BASE_PRODUCT,
+  SET_MODERATION_STATUS_FOR_BASE_PRODUCT,
 } from './queries';
 import {
   BaseProductsByStoreId,
@@ -35,13 +34,9 @@ import {
   BaseProductsByStoreId_store_findProductsAdmin_edges_node_variants_all_attributes as Attribute,
 } from './__generated__/BaseProductsByStoreId';
 import {
-  PublishBaseProduct,
-  PublishBaseProductVariables,
-} from './__generated__/PublishBaseProduct';
-import {
-  DraftBaseProduct,
-  DraftBaseProductVariables,
-} from './__generated__/DraftBaseProduct';
+  SetModerationStatusForBaseProduct,
+  SetModerationStatusForBaseProductVariables,
+} from './__generated__/SetModerationStatusForBaseProduct';
 import {
   Status,
   SearchModeratorBaseProductInput,
@@ -93,7 +88,7 @@ class Goods extends React.Component<PropsType, StateType> {
               <Menu
                 onClick={({ key }) => {
                   this.handleChangingStatusForProduct({
-                    id: record.rawId,
+                    ID: record.id,
                     status: key as Status,
                   });
                 }}
@@ -102,7 +97,7 @@ class Goods extends React.Component<PropsType, StateType> {
                   item => (
                     <Menu.Item key={item}>{item}</Menu.Item>
                   ),
-                  reject(equals(Status.DRAFT), Object.keys(Status) as Status[]),
+                  Object.keys(Status),
                 )}
               </Menu>
             }
@@ -148,69 +143,50 @@ class Goods extends React.Component<PropsType, StateType> {
     this.fetchData();
   }
 
-  handleChangingStatusForProduct = (input: { id: number; status: Status }) => {
+  handleChangingStatusForProduct = (input: { ID: string; status: Status }) => {
     Modal.confirm({
       title: 'Are you sure?',
-      content: `Change status for product with id ${input.id}`,
+      content: 'Change status for this product?',
       onOk: () => {
-        if (input.status === Status.PUBLISHED) {
-          return this.props.client
-            .mutate<PublishBaseProduct, PublishBaseProductVariables>({
-              mutation: PUBLISH_BASE_PRODUCT,
-              variables: {
-                id: input.id,
-              },
-            })
-            .then(({ data }) => {
-              if (data) {
-                const id = pathOr(
-                  null,
-                  ['publishBaseProducts', 0, 'rawId'],
-                  data,
-                );
-                const status = pathOr(
-                  null,
-                  ['publishBaseProducts', 0, 'status'],
-                  data,
-                );
-                if (id && status) {
-                  this.updateStatusForRecord(id, status);
-                }
+        return this.props.client
+          .mutate<
+            SetModerationStatusForBaseProduct,
+            SetModerationStatusForBaseProductVariables
+          >({
+            mutation: SET_MODERATION_STATUS_FOR_BASE_PRODUCT,
+            variables: {
+              id: input.ID,
+              status: input.status,
+            },
+          })
+          .then(({ data }) => {
+            console.log({ data });
+            if (data) {
+              const id = pathOr(
+                null,
+                ['setModerationStatusBaseProduct', 0, 'rawId'],
+                data,
+              );
+              const status = pathOr(
+                null,
+                ['setModerationStatusBaseProduct', 0, 'status'],
+                data,
+              );
+              if (id && status) {
+                this.updateStatusForRecord(id, status);
               }
-              return Promise.resolve();
-            });
-        } else if (input.status === Status.DRAFT) {
-          return this.props.client
-            .mutate<DraftBaseProduct, DraftBaseProductVariables>({
-              mutation: DRAFT_BASE_PRODUCT,
-              variables: {
-                id: input.id,
-              },
-            })
-            .then(({ data }) => {
-              if (data) {
-                const id = pathOr(
-                  null,
-                  ['draftBaseProducts', 0, 'rawId'],
-                  data,
-                );
-                const status = pathOr(
-                  null,
-                  ['draftBaseProducts', 0, 'status'],
-                  data,
-                );
-                if (id && status) {
-                  this.updateStatusForRecord(id, status);
-                }
-              }
-              return Promise.resolve();
-            });
-        }
+            }
+            return Promise.resolve();
+          })
+          .catch((error: ApolloError) => {
+            message.error(error.message);
+          });
       },
     });
   };
 
   updateStatusForRecord = (id: number, status: Status) => {
+    console.log({ id, status });
     const idx = findIndex(whereEq({ rawId: id }), this.state.dataSource);
     const statusLens = lensIndex(idx);
     this.setState(prevState => ({
@@ -288,6 +264,9 @@ class Goods extends React.Component<PropsType, StateType> {
           },
         });
       })
+      .catch((error: ApolloError) => {
+        message.error(error.message);
+      })
       .finally(() => {
         this.setState({ isLoading: false });
       });
@@ -299,6 +278,12 @@ class Goods extends React.Component<PropsType, StateType> {
       status = Status.PUBLISHED;
     } else if (data.status === StatusFilter.DRAFT) {
       status = Status.DRAFT;
+    } else if (data.status === StatusFilter.BLOCKED) {
+      status = Status.BLOCKED;
+    } else if (data.status === StatusFilter.DECLINE) {
+      status = Status.DECLINE;
+    } else if (data.status === StatusFilter.MODERATION) {
+      status = Status.MODERATION;
     }
 
     this.setState(

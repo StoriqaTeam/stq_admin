@@ -110,7 +110,7 @@ class LoginForm extends React.PureComponent<Props> {
                           help={validationErrors.email}
                         >
                           {getFieldDecorator('login')(
-                            <Input placeholder="Login" />,
+                            <Input placeholder="Login" data-test="email" />,
                           )}
                         </Form.Item>
                         <Form.Item
@@ -121,11 +121,19 @@ class LoginForm extends React.PureComponent<Props> {
                           help={validationErrors.password}
                         >
                           {getFieldDecorator('password')(
-                            <Input placeholder="Password" type="password" />,
+                            <Input
+                              placeholder="Password"
+                              type="password"
+                              data-test="password"
+                            />,
                           )}
                         </Form.Item>
                         <Form.Item>
-                          <Button type="primary" htmlType="submit">
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            data-test="loginButton"
+                          >
                             Login
                           </Button>
                         </Form.Item>

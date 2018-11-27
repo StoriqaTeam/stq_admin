@@ -36,25 +36,41 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[]}>
           <Menu.Item key="1">
             <Icon type="user" />
-            <Link className={styles.menuLink} to="/users">
+            <Link
+              className={styles.menuLink}
+              to="/users"
+              data-test="menu-users"
+            >
               Users
             </Link>
           </Menu.Item>
           <Menu.Item key="2">
             <Icon type="shopping" />
-            <Link className={styles.menuLink} to="/stores">
+            <Link
+              className={styles.menuLink}
+              to="/stores"
+              data-test="menu-stores"
+            >
               Stores
             </Link>
           </Menu.Item>
           <Menu.Item key="3">
             <Icon type="profile" />
-            <Link className={styles.menuLink} to="/categories">
+            <Link
+              className={styles.menuLink}
+              to="/categories"
+              data-test="menu-categories"
+            >
               Categories
             </Link>
           </Menu.Item>
           <Menu.Item key="4">
             <Icon type="global" />
-            <Link className={styles.menuLink} to="/delivery">
+            <Link
+              className={styles.menuLink}
+              to="/delivery"
+              data-test="menu-delivery"
+            >
               Delivery
               <br />
               companies
@@ -62,7 +78,11 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
           </Menu.Item>
           <Menu.Item key="5">
             <Icon type="tag" />
-            <Link className={styles.menuLink} to="/attributes">
+            <Link
+              className={styles.menuLink}
+              to="/attributes"
+              data-test="menu-attributes"
+            >
               Attributes
             </Link>
           </Menu.Item>

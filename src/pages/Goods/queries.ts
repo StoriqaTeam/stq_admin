@@ -67,9 +67,9 @@ const GOODS_BY_STORE_ID_QUERY = gql`
   }
 `;
 
-const PUBLISH_BASE_PRODUCT = gql`
-  mutation PublishBaseProduct($id: Int!) {
-    publishBaseProducts(ids: [$id]) {
+const SET_MODERATION_STATUS_FOR_BASE_PRODUCT = gql`
+  mutation SetModerationStatusForBaseProduct($id: ID!, $status: Status!) {
+    setModerationStatusBaseProduct(input: { id: $id, status: $status }) {
       id
       rawId
       status
@@ -77,14 +77,4 @@ const PUBLISH_BASE_PRODUCT = gql`
   }
 `;
 
-const DRAFT_BASE_PRODUCT = gql`
-  mutation DraftBaseProduct($id: Int!) {
-    draftBaseProducts(ids: [$id]) {
-      id
-      rawId
-      status
-    }
-  }
-`;
-
-export { GOODS_BY_STORE_ID_QUERY, PUBLISH_BASE_PRODUCT, DRAFT_BASE_PRODUCT };
+export { GOODS_BY_STORE_ID_QUERY, SET_MODERATION_STATUS_FOR_BASE_PRODUCT };

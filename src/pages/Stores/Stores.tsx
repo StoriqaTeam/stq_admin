@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Button, Menu, Dropdown, Icon, Spin, Pagination } from 'antd';
+import { Button, Menu, Dropdown, Icon, Spin, Pagination, message } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
-import ApolloClient from 'apollo-client';
+import ApolloClient, { ApolloError } from 'apollo-client';
 import { withRouter, RouteComponentProps } from 'react-router';
 import {
   map,
@@ -28,26 +28,19 @@ import {
   StoresListQuery_me_admin_storesSearchPages_edges as StoresListQueryEdge,
 } from './__generated__/StoresListQuery';
 import {
-  PublishStoreMutation,
-  PublishStoreMutationVariables,
-} from './__generated__/PublishStoreMutation';
-import {
-  DraftStoreMutation,
-  DraftStoreMutationVariables,
-} from './__generated__/DraftStoreMutation';
+  SetStoreModerationStatus,
+  SetStoreModerationStatusVariables,
+} from './__generated__/SetStoreModerationStatus';
 import {
   Status,
   SearchModeratorStoreInput,
 } from '../../../__generated__/globalTypes';
 import {
   STORES_LIST_QUERY,
-  STORE_PUBLISH_MUTATION,
-  STORE_DRAFT_MUTATION,
+  SET_MODERATION_STATUS_FOR_STORE_MUTATION,
 } from './queries';
 import FilterForm, { StatusFilter } from './FilterForm';
 import * as styles from './Stores.scss';
-
-const RECORDS_PER_PAGE = 20;
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
@@ -133,20 +126,31 @@ class Stores extends React.Component<PropsType, StateType> {
             overlay={
               <Menu
                 onClick={({ key }) => {
-                  this.changeStatusForStore(record.id, key as Status);
+                  this.changeStatusForStore(record.base64ID, key as Status);
                 }}
               >
                 {map(
                   item => (
-                    <Menu.Item key={item}>{item}</Menu.Item>
+                    <Menu.Item
+                      key={item}
+                      data-test={`stores-table-row-${
+                        record.name
+                      }-status-${item}`}
+                    >
+                      {item}
+                    </Menu.Item>
                   ),
-                  reject(equals(Status.DRAFT), Object.keys(Status) as Status[]),
+                  Object.keys(Status),
                 )}
               </Menu>
             }
           >
             <Button>
-              {record.status} <Icon type="down" />
+              {record.status}{' '}
+              <Icon
+                type="down"
+                data-test={`stores-table-row-${record.name}-status`}
+              />
             </Button>
           </Dropdown>
         ),
@@ -164,6 +168,7 @@ class Stores extends React.Component<PropsType, StateType> {
         width: 50,
         render: (_, record) => (
           <Button
+            data-test={`stores-table-row-${record.name}-goods`}
             icon="appstore"
             shape="circle"
             onClick={() => {
@@ -221,6 +226,7 @@ class Stores extends React.Component<PropsType, StateType> {
     return map((edge: StoresListQueryEdge) => {
       const node: StoresListQueryEdgeNode = edge.node;
       return {
+        base64ID: node.id,
         id: node.rawId,
         name: pathOr('', [0, 'text'], node.name),
         status: node.status,
@@ -234,46 +240,26 @@ class Stores extends React.Component<PropsType, StateType> {
     }, edges);
   };
 
-  changeStatusForStore = (id: number, status: Status) => {
-    if (status === 'DRAFT') {
-      this.setState({ isLoading: true });
-      this.props.client
-        .mutate<DraftStoreMutation, DraftStoreMutationVariables>({
-          mutation: STORE_DRAFT_MUTATION,
-          variables: {
-            id: id,
-          },
-        })
-        .then(({ data }) => {
-          const rawId = pathOr(null, ['draftStore', 'rawId'], data);
-          const newStatus = pathOr(null, ['draftStore', 'status'], data);
-          if (rawId && newStatus) {
-            this.updateStatusForStoreInDS(rawId, newStatus);
-          }
-        })
-        .finally(() => {
-          this.setState({ isLoading: false });
-        });
-    } else if (status === 'PUBLISHED') {
-      this.setState({ isLoading: true });
-      this.props.client
-        .mutate<PublishStoreMutation, PublishStoreMutationVariables>({
-          mutation: STORE_PUBLISH_MUTATION,
-          variables: {
-            id: id,
-          },
-        })
-        .then(({ data }) => {
-          const rawId = pathOr(null, ['publishStore', 'rawId'], data);
-          const newStatus = pathOr(null, ['publishStore', 'status'], data);
-          if (rawId && newStatus) {
-            this.updateStatusForStoreInDS(rawId, newStatus);
-          }
-        })
-        .finally(() => {
-          this.setState({ isLoading: false });
-        });
-    }
+  changeStatusForStore = (ID: string, status: Status) => {
+    this.setState({ isLoading: true });
+
+    this.props.client
+      .mutate<SetStoreModerationStatus, SetStoreModerationStatusVariables>({
+        mutation: SET_MODERATION_STATUS_FOR_STORE_MUTATION,
+        variables: {
+          id: ID,
+          status,
+        },
+      })
+      .then(({ data }) => {
+        console.log({ data });
+      })
+      .catch((error: ApolloError) => {
+        message.error(error.message);
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
   };
 
   updateStatusForStoreInDS = (id: number, status: Status) => {
@@ -294,6 +280,14 @@ class Stores extends React.Component<PropsType, StateType> {
     switch (filterStatus) {
       case StatusFilter.PUBLISHED:
         return Status.PUBLISHED;
+      case StatusFilter.DECLINE:
+        return Status.DECLINE;
+      case StatusFilter.DRAFT:
+        return Status.DRAFT;
+      case StatusFilter.MODERATION:
+        return Status.MODERATION;
+      case StatusFilter.BLOCKED:
+        return Status.BLOCKED;
       default:
         return null;
     }
@@ -345,7 +339,6 @@ class Stores extends React.Component<PropsType, StateType> {
               onChange={pageNumber => {
                 this.setState(
                   {
-                    // dataSource: [],
                     pageInfo: {
                       ...this.state.pageInfo,
                       currentPage: pageNumber,

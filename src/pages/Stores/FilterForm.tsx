@@ -8,7 +8,10 @@ import * as styles from './FilterForm.scss';
 export enum StatusFilter {
   ALL = 'ALL',
   PUBLISHED = 'PUBLISHED',
-  // DRAFT = 'DRAFT',
+  DRAFT = 'DRAFT',
+  MODERATION = 'MODERATION',
+  DECLINE = 'DECLINE',
+  BLOCKED = 'BLOCKED',
 }
 
 export interface StoresFormFilterType {
@@ -41,10 +44,14 @@ class FilterForm extends React.PureComponent<PropsType> {
         className={styles.form}
       >
         <Form.Item label="Name">
-          {getFieldDecorator('name')(<Input placeholder="Name" />)}
+          {getFieldDecorator('name')(
+            <Input placeholder="Name" data-test="stores-filter-name" />,
+          )}
         </Form.Item>
         <Form.Item label="Email">
-          {getFieldDecorator('email')(<Input placeholder="Email" />)}
+          {getFieldDecorator('email')(
+            <Input placeholder="Email" data-test="stores-filter-email" />,
+          )}
         </Form.Item>
         <Form.Item label="Status">
           {getFieldDecorator('status', { initialValue: StatusFilter.ALL })(
@@ -57,7 +64,12 @@ class FilterForm extends React.PureComponent<PropsType> {
                 >
                   {map(
                     item => (
-                      <Menu.Item key={item}>{item}</Menu.Item>
+                      <Menu.Item
+                        key={item}
+                        data-test={`stores-filter-status-${item}`}
+                      >
+                        {item}
+                      </Menu.Item>
                     ),
                     Object.keys(StatusFilter),
                   )}
@@ -65,13 +77,16 @@ class FilterForm extends React.PureComponent<PropsType> {
               }
             >
               <Button>
-                {getFieldValue('status')} <Icon type="down" />
+                {getFieldValue('status')}{' '}
+                <Icon type="down" data-test="stores-filter-status" />
               </Button>
             </Dropdown>,
           )}
         </Form.Item>
         <Form.Item>
-          <Button onClick={this.handleSubmit}>Apply</Button>
+          <Button onClick={this.handleSubmit} data-test="stores-filter-apply">
+            Apply
+          </Button>
         </Form.Item>
       </Form>
     );
