@@ -48,6 +48,8 @@ interface PropsType {
   onSave: (data: any) => void;
 }
 
+const confirm = Modal.confirm;
+
 class CommonForm extends React.Component<PropsType, StateType> {
   private inputRef = React.createRef<Input>();
   constructor(props: PropsType) {
@@ -287,6 +289,21 @@ class CommonForm extends React.Component<PropsType, StateType> {
     this.setState({ code: e.target.value });
   };
 
+  showConfirmDeleteItem = (id: number) => {
+    const { attribute, onDeleteAttributeValue } = this.props;
+    confirm({
+      title: 'Do you want to delete these item?',
+      onOk() {
+        if (attribute && onDeleteAttributeValue) {
+          onDeleteAttributeValue(id);
+        }
+      },
+      onCancel() {
+        //
+      },
+    });
+  };
+
   render() {
     return (
       <div>
@@ -367,7 +384,11 @@ class CommonForm extends React.Component<PropsType, StateType> {
                                 shape="circle"
                                 icon="close"
                                 size="small"
-                                onClick={() => this.handleDeleteItem(item.id)}
+                                onClick={() => {
+                                  this.props.attribute
+                                    ? this.showConfirmDeleteItem(item.id)
+                                    : this.handleDeleteItem(item.id);
+                                }}
                               />
                             </div>
                           </div>
