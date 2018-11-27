@@ -7,6 +7,10 @@ import * as styles from './FilterForm.scss';
 
 export enum StatusFilter {
   ALL = 'ALL',
+  DRAFT = 'DRAFT',
+  MODERATION = 'MODERATION',
+  DECLINE = 'DECLINE',
+  BLOCKED = 'BLOCKED',
   PUBLISHED = 'PUBLISHED',
 }
 
