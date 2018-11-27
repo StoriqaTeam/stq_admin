@@ -131,7 +131,14 @@ class Stores extends React.Component<PropsType, StateType> {
               >
                 {map(
                   item => (
-                    <Menu.Item key={item}>{item}</Menu.Item>
+                    <Menu.Item
+                      key={item}
+                      data-test={`stores-table-row-${
+                        record.name
+                      }-status-${item}`}
+                    >
+                      {item}
+                    </Menu.Item>
                   ),
                   Object.keys(Status),
                 )}
@@ -139,7 +146,11 @@ class Stores extends React.Component<PropsType, StateType> {
             }
           >
             <Button>
-              {record.status} <Icon type="down" />
+              {record.status}{' '}
+              <Icon
+                type="down"
+                data-test={`stores-table-row-${record.name}-status`}
+              />
             </Button>
           </Dropdown>
         ),
@@ -157,6 +168,7 @@ class Stores extends React.Component<PropsType, StateType> {
         width: 50,
         render: (_, record) => (
           <Button
+            data-test={`stores-table-row-${record.name}-goods`}
             icon="appstore"
             shape="circle"
             onClick={() => {
