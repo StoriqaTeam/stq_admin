@@ -252,7 +252,19 @@ class Stores extends React.Component<PropsType, StateType> {
         },
       })
       .then(({ data }) => {
-        console.log({ data });
+        const rawId: number | null = pathOr(
+          null,
+          ['setModerationStatusStore', 'rawId'],
+          data,
+        );
+        const status: Status | null = pathOr(
+          null,
+          ['setModerationStatusStore', 'status'],
+          data,
+        );
+        if (rawId && status) {
+          this.updateStatusForStoreInDS(rawId, status);
+        }
       })
       .catch((error: ApolloError) => {
         message.error(error.message);

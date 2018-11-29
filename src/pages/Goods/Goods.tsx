@@ -160,21 +160,18 @@ class Goods extends React.Component<PropsType, StateType> {
             },
           })
           .then(({ data }) => {
-            console.log({ data });
-            if (data) {
-              const id = pathOr(
-                null,
-                ['setModerationStatusBaseProduct', 0, 'rawId'],
-                data,
-              );
-              const status = pathOr(
-                null,
-                ['setModerationStatusBaseProduct', 0, 'status'],
-                data,
-              );
-              if (id && status) {
-                this.updateStatusForRecord(id, status);
-              }
+            const id = pathOr(
+              null,
+              ['setModerationStatusBaseProduct', 'rawId'],
+              data,
+            );
+            const status = pathOr(
+              null,
+              ['setModerationStatusBaseProduct', 'status'],
+              data,
+            );
+            if (id && status) {
+              this.updateStatusForRecord(id, status);
             }
             return Promise.resolve();
           })
