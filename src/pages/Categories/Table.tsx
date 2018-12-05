@@ -4,6 +4,7 @@ import { Table } from 'antd';
 
 export interface ICategory {
   id: string;
+  rawId: number;
   name: string;
   level: number;
   children?: ICategory[] | null;

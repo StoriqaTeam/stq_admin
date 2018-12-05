@@ -14,8 +14,6 @@ import {
   whereEq,
   assoc,
   lensIndex,
-  reject,
-  equals,
 } from 'ramda';
 import { parse, format } from 'date-fns';
 
