@@ -17,10 +17,11 @@ import {
   isEmpty,
   anyPass,
   pick,
-  equals,
 } from 'ramda';
+import { parse, format } from 'date-fns';
 
 import StoresTable, { IStore } from './Table';
+import Subtable from './Subtable';
 import {
   StoresListQuery,
   StoresListQueryVariables,
@@ -98,16 +99,6 @@ class Stores extends React.Component<PropsType, StateType> {
         dataIndex: 'ownerEmail',
       },
       {
-        key: 'ownerFirstname',
-        title: 'First name',
-        dataIndex: 'ownerFirstname',
-      },
-      {
-        key: 'ownerLastname',
-        title: 'Last name',
-        dataIndex: 'ownerLastname',
-      },
-      {
         key: 'country',
         title: 'Country',
         dataIndex: 'country',
@@ -159,7 +150,13 @@ class Stores extends React.Component<PropsType, StateType> {
         key: 'Created',
         title: 'createdAt',
         dataIndex: 'createdAt',
-        render: () => '-',
+        render: (_, record) => format(record.createdAt, 'YYYY/MM/DD HH:mm'),
+      },
+      {
+        key: 'Updated',
+        title: 'updatedAt',
+        dataIndex: 'updatedAt',
+        render: (_, record) => format(record.updatedAt, 'YYYY/MM/DD HH:mm'),
       },
       {
         key: 'goods',
@@ -230,11 +227,14 @@ class Stores extends React.Component<PropsType, StateType> {
         id: node.rawId,
         name: pathOr('', [0, 'text'], node.name),
         status: node.status,
-        createdAt: new Date(), // TODO
+        createdAt: parse(node.createdAt),
+        updatedAt: parse(node.updatedAt),
+        ownerPhone: node.storeManager && node.storeManager.phone,
         ownerFirstname: node.storeManager && node.storeManager.firstName,
         ownerLastname: node.storeManager && node.storeManager.lastName,
         ownerEmail: node.storeManager && node.storeManager.email,
         country: node.addressFull.country,
+        address: node.addressFull.value,
         productsCount: node.productsCount,
       };
     }, edges);
@@ -330,6 +330,35 @@ class Stores extends React.Component<PropsType, StateType> {
           rowKey={record => `${record.id}`}
           pagination={false}
           rowClassName={() => styles.row}
+          expandedRowRender={(store: IStore) => (
+            <Subtable
+              columns={[
+                {
+                  key: 'ownerFirstname',
+                  title: 'First name',
+                  dataIndex: 'ownerFirstname',
+                },
+                {
+                  key: 'ownerLastname',
+                  title: 'Last name',
+                  dataIndex: 'ownerLastname',
+                },
+                {
+                  key: 'ownerPhone',
+                  title: 'Phone',
+                  dataIndex: 'ownerPhone',
+                },
+                {
+                  key: 'address',
+                  title: 'Address',
+                  dataIndex: 'address',
+                },
+              ]}
+              dataSource={[store]}
+              rowKey="id"
+              pagination={false}
+            />
+          )}
           footer={() => (
             <Pagination
               showSizeChanger
