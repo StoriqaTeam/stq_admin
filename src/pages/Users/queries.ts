@@ -28,6 +28,7 @@ const USERS_QUERY = gql`
               lastName
               isBlocked
               email
+              phone
               rolesOnUserMicroservices
               rolesOnStoresMicroservices
             }
