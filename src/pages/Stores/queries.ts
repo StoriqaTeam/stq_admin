@@ -34,10 +34,14 @@ const STORES_LIST_QUERY = gql`
                 firstName
                 lastName
                 email
+                phone
               }
               addressFull {
+                value
                 country
               }
+              createdAt
+              updatedAt
               warehouses {
                 id
                 products(currentPage: 1, itemsCount: 99999) {

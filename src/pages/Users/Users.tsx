@@ -58,6 +58,7 @@ export interface IUser {
   isBlocked: boolean;
   userMicroserviceRoles: UserMicroserviceRole[];
   storeMicroserviceRoles: StoresMicroserviceRole[];
+  phone: string | null;
 }
 
 interface PropsType {
@@ -117,6 +118,11 @@ class Users extends React.Component<PropsType, StateType> {
         key: 'lastname',
         title: 'Last name',
         dataIndex: 'lastname',
+      },
+      {
+        key: 'phone',
+        title: 'Phone',
+        dataIndex: 'phone',
       },
       {
         key: 'isBlocked',
@@ -325,6 +331,7 @@ class Users extends React.Component<PropsType, StateType> {
         isBlocked: node.isBlocked,
         userMicroserviceRoles: node.rolesOnUserMicroservices || [],
         storeMicroserviceRoles: node.rolesOnStoresMicroservices || [],
+        phone: node.phone,
       }),
       edges,
     );
