@@ -59,4 +59,12 @@ const CATEGORIES_LIST_QUERY = gql`
   }
 `;
 
-export { CATEGORIES_LIST_QUERY };
+const REPLACE_CATEGORY_MUTATION = gql`
+  mutation ReplaceCategoryMutation($input: CategoryReplaceInput!) {
+    replaceCategory(input: $input) {
+      id
+    }
+  }
+`;
+
+export { CATEGORIES_LIST_QUERY, REPLACE_CATEGORY_MUTATION };
