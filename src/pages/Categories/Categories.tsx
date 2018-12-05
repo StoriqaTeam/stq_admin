@@ -175,7 +175,6 @@ class Categories extends React.Component<PropsType, StateType> {
   };
 
   render() {
-    console.log({ state: this.state });
     return (
       <Spin spinning={this.state.isLoading}>
         <Row type="flex" justify="end" className={styles.addCategoryBtnWrapper}>
