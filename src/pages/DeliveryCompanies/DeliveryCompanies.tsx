@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { Button, Spin } from 'antd';
+import { Button, Modal, Spin } from 'antd';
 import { withRouter, RouteComponentProps } from 'react-router';
 import ApolloClient from 'apollo-client';
 import { ApolloConsumer } from 'react-apollo';
 import { map } from 'ramda';
 
 import DeliveryCompaniesTable, { IDeliveryCompany } from './Table';
-import { COMPANIES_LIST_QUERY } from './queries';
+import { COMPANIES_LIST_QUERY, DELETE_COMPANY_MUTATION } from './queries';
+import {
+  DeleteCompanyMutation,
+  DeleteCompanyMutationVariables,
+} from './__generated__/DeleteCompanyMutation';
 import { CompaniesListQuery } from './__generated__/CompaniesListQuery';
 import * as styles from './DeliveryCompanies.scss';
 
@@ -66,6 +70,28 @@ class DeliveryCompanies extends React.Component<PropsType, StateType> {
       });
   };
 
+  handleCompanyDelete = (id: number) => {
+    Modal.confirm({
+      title: 'Delete company',
+      content: 'Are you sure to delete this company?',
+      onOk: () =>
+        this.props.client
+          .mutate<
+            DeleteCompanyMutation,
+            DeleteCompanyMutationVariables
+            >({
+            mutation: DELETE_COMPANY_MUTATION,
+            variables: {
+              id,
+            },
+          })
+          .then(() => {
+            window.location.reload();
+            return Promise.resolve({});
+          }),
+    });
+  };
+
   render() {
     return (
       <Spin spinning={this.state.isLoading}>
@@ -109,13 +135,22 @@ class DeliveryCompanies extends React.Component<PropsType, StateType> {
               dataIndex: 'actions',
               title: 'Actions',
               render: (_, record) => (
-                <Button
-                  shape="circle"
-                  icon="edit"
-                  onClick={() => {
-                    this.props.history.push(`/delivery/companies/${record.id}`);
-                  }}
-                />
+                <div>
+                  <Button
+                    shape="circle"
+                    icon="edit"
+                    onClick={() => {
+                      this.props.history.push(`/delivery/companies/${record.id}`);
+                    }}
+                  />
+                  <Button
+                    shape="circle"
+                    icon="delete"
+                    onClick={() => {
+                      this.handleCompanyDelete(record.id);
+                    }}
+                  />
+                </div>
               ),
               width: 100,
             },
