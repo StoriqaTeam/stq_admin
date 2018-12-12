@@ -65,10 +65,10 @@ export interface IUser {
     value: string;
   }> | null;
   country: {
-    label: string | null;
-    alpha2: string | null;
-    alpha3: string | null;
-  };
+    label: string;
+    alpha2: string;
+    alpha3: string;
+  } | null;
   referer: string | null;
 }
 
@@ -144,7 +144,6 @@ class Users extends React.Component<PropsType, StateType> {
         render: (_, record) => {
           return (
             <React.Fragment>
-              {console.log('---record', record)}
               <Button
                 shape="circle"
                 icon="select"
