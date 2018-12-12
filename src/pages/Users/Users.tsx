@@ -59,6 +59,17 @@ export interface IUser {
   userMicroserviceRoles: UserMicroserviceRole[];
   storeMicroserviceRoles: StoresMicroserviceRole[];
   phone: string | null;
+  referal: number | null;
+  utmMarks: Array<{
+    key: string;
+    value: string;
+  }> | null;
+  country: {
+    label: string;
+    alpha2: string;
+    alpha3: string;
+  } | null;
+  referer: string | null;
 }
 
 interface PropsType {
@@ -71,6 +82,7 @@ interface StateType {
   filters: UserFormFilterType;
   error: Error | null;
   openedModalUserId: number | null;
+  openedRefModalUserId: number | null;
   pageInfo: {
     currentPage: number;
     pageItemsCount: number;
@@ -87,6 +99,7 @@ class Users extends React.Component<PropsType, StateType> {
     filters: {},
     error: null,
     openedModalUserId: null,
+    openedRefModalUserId: null,
     pageInfo: {
       currentPage: 1,
       pageItemsCount: 10,
@@ -123,6 +136,75 @@ class Users extends React.Component<PropsType, StateType> {
         key: 'phone',
         title: 'Phone',
         dataIndex: 'phone',
+      },
+      {
+        key: 'ref',
+        title: 'Refs',
+        dataIndex: 'ref',
+        render: (_, record) => {
+          return (
+            <React.Fragment>
+              <Button
+                shape="circle"
+                icon="select"
+                onClick={() => {
+                  Modal.info({
+                    title: '',
+                    content: (
+                      <div>
+                        <br />
+                        <div>
+                          <b>Referal:</b> {record.referal}
+                        </div>
+                        <br />
+                        <div>
+                          <div>
+                            <b>Utm marks:</b>
+                          </div>
+                          <div>
+                            {map(item => (
+                              <div style={{ display: 'flex', paddingLeft: '20px' }}>
+                                <div>{item.key}:&nbsp;</div>
+                                <div>{item.value}</div>
+                              </div>
+                            ), record.utmMarks || [])}
+                          </div>
+                        </div>
+                        <br />
+                        <div>
+                          <div>
+                            <b>Country:</b>
+                          </div>
+                          {record.country &&
+                            <div>
+                              <div style={{ display: 'flex', paddingLeft: '20px' }}>
+                                <div>label:&nbsp;</div>
+                                <div>{record.country.label || ''}</div>
+                              </div>
+                              <div style={{ display: 'flex', paddingLeft: '20px' }}>
+                                <div>alpha2:&nbsp;</div>
+                                <div>{record.country.alpha2 || ''}</div>
+                              </div>
+                              <div style={{ display: 'flex', paddingLeft: '20px' }}>
+                                <div>alpha3:&nbsp;</div>
+                                <div>{record.country.alpha3 || ''}</div>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                        <br />
+                        <div>
+                          <b>Referer:</b> {record.referer}
+                        </div>
+                      </div>
+                    ),
+                    onOk() { return null; },
+                  });
+                }}
+              />
+            </React.Fragment>
+          );
+        },
       },
       {
         key: 'isBlocked',
@@ -332,6 +414,10 @@ class Users extends React.Component<PropsType, StateType> {
         userMicroserviceRoles: node.rolesOnUserMicroservices || [],
         storeMicroserviceRoles: node.rolesOnStoresMicroservices || [],
         phone: node.phone,
+        referal: node.referal,
+        utmMarks: node.utmMarks,
+        country: node.country,
+        referer: node.referer,
       }),
       edges,
     );

@@ -31,6 +31,17 @@ const USERS_QUERY = gql`
               phone
               rolesOnUserMicroservices
               rolesOnStoresMicroservices
+              referal
+              utmMarks {
+                key
+                value
+              }
+              country {
+                label
+                alpha2
+                alpha3
+              }
+              referer
             }
           }
         }
