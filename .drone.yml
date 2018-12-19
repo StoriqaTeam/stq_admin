@@ -140,8 +140,8 @@ pipeline:
   build:
     image: node:9.9
     environment:
-    - GRAPHQL_URL=https://storiqa.com/graphql
-    - PRODUCT_URL=https://storiqa.com
+    - GRAPHQL_URL=https://stage.stq.cloud/graphql
+    - PRODUCT_URL=https://stage.stq.cloud
     - APP_SUBPATH=/storiqatools
     commands:
     - yarn -s --no-progress --non-interactive --production=false
