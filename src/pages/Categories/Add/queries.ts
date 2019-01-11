@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 const ADD_CATEGORY_CATEGORIES_LIST = gql`
   query AddCategoryCategoriesListQuery {
-    categories {
+    allCategories {
       id
       rawId
       name {

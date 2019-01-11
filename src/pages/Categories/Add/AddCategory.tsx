@@ -13,8 +13,8 @@ import {
 } from './queries';
 import {
   AddCategoryCategoriesListQuery,
-  AddCategoryCategoriesListQuery_categories_children as Category1stLvl,
-  AddCategoryCategoriesListQuery_categories_children_children as Category2ndLvl,
+  AddCategoryCategoriesListQuery_allCategories_children as Category1stLvl,
+  AddCategoryCategoriesListQuery_allCategories_children_children as Category2ndLvl,
 } from './__generated__/AddCategoryCategoriesListQuery';
 import {
   AddCategoryCreateCategoryMutation,
@@ -57,15 +57,15 @@ class AddCategory extends React.Component<PropsType, StateType> {
   prepareTreeListData = (
     data: AddCategoryCategoriesListQuery,
   ): TreeNodeNormal[] => {
-    if (!data.categories) {
+    if (!data.allCategories) {
       return [];
     }
 
     return [
       {
-        key: `${data.categories.rawId}`,
-        value: `${data.categories.rawId}`,
-        title: pathOr('', ['name', 0, 'text'], data.categories),
+        key: `${data.allCategories.rawId}`,
+        value: `${data.allCategories.rawId}`,
+        title: pathOr('', ['name', 0, 'text'], data.allCategories),
         children: map(
           (cat1stLvl: Category1stLvl) => ({
             key: `${cat1stLvl.rawId}`,
@@ -81,7 +81,7 @@ class AddCategory extends React.Component<PropsType, StateType> {
               cat1stLvl.children,
             ),
           }),
-          data.categories.children,
+          data.allCategories.children,
         ),
       },
     ];
