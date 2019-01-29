@@ -423,6 +423,7 @@ class Users extends React.Component<PropsType, StateType> {
     );
 
   loadMore = (callback?: () => void) => {
+    console.log('---this.state.filters', this.state.filters);
     this.setState({ isLoading: true });
     this.props.client
       .query<UsersListQuery, UsersListQueryVariables>({

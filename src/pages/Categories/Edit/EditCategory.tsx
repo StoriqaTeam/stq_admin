@@ -97,6 +97,7 @@ class EditCategory extends React.PureComponent<PropsType, StateType> {
 
   fetchData = () => {
     const currentCategoryId = pathOr('', ['id'], this.props.match.params);
+    console.log('---currentCategoryId', currentCategoryId);
     this.setState({ isLoading: true });
     this.props.client
       .query<CategoriesListQuery, EditCategoryCategoriesListQueryVariables>({
@@ -107,6 +108,7 @@ class EditCategory extends React.PureComponent<PropsType, StateType> {
         fetchPolicy: 'network-only',
       })
       .then(({ data }) => {
+        console.log('---data', data);
         const categoryNode = data.node ? (data.node as CategoryNode) : null;
         let translations = {};
         if (categoryNode) {

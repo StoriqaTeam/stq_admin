@@ -86,6 +86,16 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               Attributes
             </Link>
           </Menu.Item>
+          <Menu.Item key="6">
+            <Icon type="audit" />
+            <Link
+              className={styles.menuLink}
+              to="/financial-manager"
+              data-test="menu-financial-manager"
+            >
+              Financial Meneger
+            </Link>
+          </Menu.Item>
         </Menu>
       </Sider>
     );

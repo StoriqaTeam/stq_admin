@@ -22,6 +22,7 @@ const refreshTokenMiddleware = new ApolloLink((operation, forward) => {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('jwt')}`,
       Currency: 'STQ',
+      FiatCurrency: 'USD',
     },
   });
 
