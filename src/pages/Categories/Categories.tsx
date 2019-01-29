@@ -11,8 +11,8 @@ import CategoriesTree from './CategoriesTree';
 import { CATEGORIES_LIST_QUERY, REPLACE_CATEGORY_MUTATION } from './queries';
 import {
   CategoriesListQuery,
-  CategoriesListQuery_categories_children_children as Category2Lvl,
-  CategoriesListQuery_categories_children_children_children as Category3Lvl,
+  CategoriesListQuery_allCategories_children_children as Category2Lvl,
+  CategoriesListQuery_allCategories_children_children_children as Category3Lvl,
 } from './__generated__/CategoriesListQuery';
 import {
   ReplaceCategoryMutation,
@@ -125,7 +125,7 @@ class Categories extends React.Component<PropsType, StateType> {
           })),
         )(item.children),
       };
-    }, (data.categories && data.categories.children) || []);
+    }, (data.allCategories && data.allCategories.children) || []);
     return lvl1Categories;
   };
 
@@ -161,12 +161,13 @@ class Categories extends React.Component<PropsType, StateType> {
           },
         })
         .then(({ data }) => {
-          if (data && data.replaceCategory instanceof Array)
+          if (data && data.replaceCategory instanceof Array) {
             message.info(
               `Successfully transfered ${
                 data.replaceCategory.length
-              } products!`,
+                } products!`,
             );
+          }
         })
         .catch((error: ApolloError) => {
           message.error(error.message);

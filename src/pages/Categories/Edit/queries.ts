@@ -12,7 +12,7 @@ const EDIT_CATEGORY_CATEGORIES_LIST_QUERY = gql`
         }
       }
     }
-    categories {
+    allCategories {
       id
       rawId
       name {

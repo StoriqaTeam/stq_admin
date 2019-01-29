@@ -14,8 +14,8 @@ import {
 } from './queries';
 import {
   EditCategoryCategoriesListQuery as CategoriesListQuery,
-  EditCategoryCategoriesListQuery_categories_children as Category1stLvl,
-  EditCategoryCategoriesListQuery_categories_children_children as Category2ndLvl,
+  EditCategoryCategoriesListQuery_allCategories_children as Category1stLvl,
+  EditCategoryCategoriesListQuery_allCategories_children_children as Category2ndLvl,
   EditCategoryCategoriesListQuery_node_Category as CategoryNode,
   EditCategoryCategoriesListQueryVariables,
 } from './__generated__/EditCategoryCategoriesListQuery';
@@ -52,15 +52,15 @@ class EditCategory extends React.PureComponent<PropsType, StateType> {
 
   prepareTreeListData = (data: CategoriesListQuery): TreeNodeNormal[] => {
     const currentCategoryId = pathOr(null, ['id'], this.props.match.params);
-    if (!data.categories) {
+    if (!data.allCategories) {
       return [];
     }
 
     return [
       {
-        key: `${data.categories.rawId}`,
-        value: `${data.categories.rawId}`,
-        title: pathOr('', ['name', 0, 'text'], data.categories),
+        key: `${data.allCategories.rawId}`,
+        value: `${data.allCategories.rawId}`,
+        title: pathOr('', ['name', 0, 'text'], data.allCategories),
         children: map(
           (cat1stLvl: Category1stLvl) => ({
             key: `${cat1stLvl.rawId}`,
@@ -78,7 +78,7 @@ class EditCategory extends React.PureComponent<PropsType, StateType> {
               cat1stLvl.children,
             ),
           }),
-          data.categories.children,
+          data.allCategories.children,
         ),
       },
     ];
