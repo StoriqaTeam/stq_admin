@@ -50,7 +50,7 @@ class FilterForm extends React.PureComponent<PropsType> {
           className={styles.filterForm}
         >
           <Form.Item label="Email">
-            {getFieldDecorator('email')(<Input placeholder="Email" />)}
+            {getFieldDecorator('email')(<Input placeholder="Email" data-test="email" />)}
           </Form.Item>
           <Form.Item label="First name">
             {getFieldDecorator('firstname')(<Input placeholder="First name" />)}

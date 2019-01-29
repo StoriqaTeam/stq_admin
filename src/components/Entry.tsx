@@ -5,6 +5,7 @@ import { Redirect, Switch, Route } from 'react-router-dom';
 
 import { AppLayout } from '../pages/Layout';
 import { Users } from '../pages/Users';
+import { FinancialManager } from '../pages/FinancialManager';
 import { Stores } from '../pages/Stores';
 import {
   Categories,
@@ -47,6 +48,7 @@ class Entry extends React.PureComponent<{}> {
               return (
                 <Switch>
                   <Route path="/users" exact component={Users} />
+                  <Route path="/financial-manager" exact component={FinancialManager} />
 
                   <Route path="/stores" exact component={Stores} />
                   <Route path="/stores/:id/goods" exact component={Goods} />
