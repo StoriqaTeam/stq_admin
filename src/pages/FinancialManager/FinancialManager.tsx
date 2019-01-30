@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Menu, Dropdown, Icon, Spin, Pagination, message, Checkbox, Modal } from 'antd';
+import { Button, Menu, Dropdown, Icon, Spin, Pagination, message, Checkbox, Modal, Table, Tag } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient, { ApolloError } from 'apollo-client';
@@ -17,6 +17,11 @@ import {
   isEmpty,
   anyPass,
   pick,
+  toPairs,
+  addIndex,
+  toString,
+  head,
+  last,
 } from 'ramda';
 import { parse, format } from 'date-fns';
 
@@ -73,7 +78,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
     searchTerms: {},
     pageInfo: {
       currentPage: 1,
-      pageItemsCount: 10,
+      pageItemsCount: 20,
       totalPages: 1,
     },
   };
@@ -130,16 +135,88 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         dataIndex: 'state',
         render: (_, record) => {
           const { setPaidToSellerOrderState } = this;
-          const { id, state } = record;
+          const { id, state, internationalBillingInfo, russiaBillingInfo } = record;
+
           return (
             <Checkbox
               checked={state === 'PAID_TO_SELLER'}
               disabled={state === 'PAID_TO_SELLER' || state !== 'PAYMENT_TO_SELLER_NEEDED'}
               onChange={() => {
                 Modal.confirm({
+                  width: 800,
                   title: 'Are you sure paid to seller?',
                   content: (
-                    <div>Some descriptions</div>
+                    <div>
+                      {internationalBillingInfo && (
+                        <React.Fragment>
+                          <Table
+                            size="small"
+                            columns={[
+                              {
+                                key: 'detailLabel',
+                                title: <Tag>Order info</Tag>,
+                                dataIndex: 'detailLabel',
+                              },
+                              {
+                                key: 'detailValue',
+                                title: '',
+                                dataIndex: 'detailValue',
+                              },
+                            ]}
+                            dataSource={addIndex(map)((item, idx) => {
+                              return {
+                                key: toString(idx),
+                                // @ts-ignore: Unreachable code error
+                                detailLabel: item[0],
+                                // @ts-ignore: Unreachable code error
+                                detailValue: item[1],
+                              };
+                            }, toPairs(pick([
+                              'orderSlug',
+                              'storeId',
+                              'totalAmount',
+                              'cashbackAmount',
+                              'sellerCurrency',
+                              'feeAmount',
+                              'feeCurrency',
+                            ], record)))}
+                            rowKey="id"
+                            pagination={false}
+                          />
+                          <br />
+                          <Table
+                            size="small"
+                            columns={[
+                              {
+                                key: 'detailLabel',
+                                title: <Tag>Billing info</Tag>,
+                                dataIndex: 'detailLabel',
+                              },
+                              {
+                                key: 'detailValue',
+                                title: '',
+                                dataIndex: 'detailValue',
+                              },
+                            ]}
+                            dataSource={addIndex(map)((item, idx) => {
+                              return {
+                                key: toString(idx),
+                                // @ts-ignore: Unreachable code error
+                                detailLabel: item[0],
+                                // @ts-ignore: Unreachable code error
+                                detailValue: item[1],
+                              };
+                              // @ts-ignore: Unreachable code error
+                            }, toPairs(internationalBillingInfo))}
+                            rowKey="id"
+                            pagination={false}
+                          />
+                        </React.Fragment>
+                      )}
+                      {russiaBillingInfo && (
+                        <div>RBI</div>
+                      )}
+                    </div>
                   ),
                   okText: 'Yes',
                   okType: 'danger',
@@ -303,6 +380,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
           }}
         />
         <FinancialManagerTable
+          size="small"
           columns={this.columns}
           dataSource={this.state.dataSource}
           rowKey={record => `${record.id}`}
@@ -313,6 +391,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
             if (internationalBillingInfo) {
               return (
                 <Subtable
+                  size="small"
                   columns={[
                     {
                       key: 'account',
@@ -424,6 +503,8 @@ class FinancialManager extends React.Component<PropsType, StateType> {
           footer={() => (
             <Pagination
               showSizeChanger
+              pageSize={this.state.pageInfo.pageItemsCount}
+              current={this.state.pageInfo.currentPage}
               onShowSizeChange={(current, pageSize) => {
                 this.setState(
                   {
@@ -452,7 +533,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
                   },
                 );
               }}
-              defaultCurrent={this.state.pageInfo.currentPage}
+              defaultCurrent={1}
               total={
                 this.state.pageInfo.totalPages *
                 this.state.pageInfo.pageItemsCount
