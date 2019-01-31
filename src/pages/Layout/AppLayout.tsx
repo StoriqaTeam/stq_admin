@@ -128,6 +128,7 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               size="large"
               className={styles.logout}
               onClick={this.handleLogout}
+              data-test="logout"
             />
           </Header>
           <Content className={styles.content}>

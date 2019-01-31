@@ -93,7 +93,14 @@ class Goods extends React.Component<PropsType, StateType> {
               >
                 {map(
                   item => (
-                    <Menu.Item key={item}>{item}</Menu.Item>
+                    <Menu.Item
+                      key={item}
+                      data-test={`goods-table-row-${
+                        record.name
+                      }-status-${item}`}
+                    >
+                      {item}
+                    </Menu.Item>
                   ),
                   Object.keys(Status),
                 )}
