@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Menu, Dropdown, Icon, Spin, Pagination, message, Checkbox, Modal, Table, Tag } from 'antd';
+import { Spin, Pagination, message, Checkbox, Modal, Table, Tag } from 'antd';
 import { ColumnProps } from 'antd/lib/table'; // tslint:disable-line
 import { ApolloConsumer } from 'react-apollo';
 import ApolloClient, { ApolloError } from 'apollo-client';
@@ -20,12 +20,10 @@ import {
   toPairs,
   addIndex,
   toString,
-  head,
-  last,
 } from 'ramda';
-import { parse, format } from 'date-fns';
+import { format } from 'date-fns';
 
-import FinancialManagerTable, { IStore } from './Table';
+import FinancialManagerTable, { IFinancialManager } from './Table';
 import Subtable from './Subtable';
 import {
   FinancialManagerQuery,
@@ -33,14 +31,8 @@ import {
   FinancialManagerQuery_me_financialManager_orders_edges_node as FinancialManagerQueryEdgeNode,
   FinancialManagerQuery_me_financialManager_orders_edges as FinancialManagerQueryEdge,
 } from './__generated__/FinancialManagerQuery';
-// import {
-//   SetStoreModerationStatus,
-//   SetStoreModerationStatusVariables,
-// } from './__generated__/SetStoreModerationStatus';
 import {
-  Status,
   PaymentState,
-  SearchModeratorStoreInput,
   OrderBillingSearchInput,
 } from '../../../__generated__/globalTypes';
 import { FINANCIAL_MANAGER_QUERY, SET_PAID_TO_SELLER_ORDER_STATE_MUTATION } from './queries';
@@ -50,14 +42,13 @@ import {
   SetPaidToSellerOrderState,
   SetPaidToSellerOrderStateVariables,
 } from './__generated__/SetPaidToSellerOrderState';
-import { SET_MODERATION_STATUS_FOR_STORE_MUTATION } from '../Stores/queries';
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
 }
 
 interface StateType {
-  dataSource: IStore[];
+  dataSource: IFinancialManager[];
   isLoading: boolean;
   error: Error | null;
   hasNextPage: boolean;
@@ -83,7 +74,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
     },
   };
 
-  columns: Array<ColumnProps<IStore>> = [];
+  columns: Array<ColumnProps<IFinancialManager>> = [];
 
   constructor(props: PropsType) {
     super(props);
@@ -93,6 +84,12 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         key: 'orderSlug',
         title: 'Order',
         dataIndex: 'orderSlug',
+      },
+      {
+        key: 'orderCreatedAt',
+        title: 'Order created at',
+        dataIndex: 'orderCreatedAt',
+        render: (_, record) => format(record.orderCreatedAt, 'DD.MM.YYYY HH:mm'),
       },
       {
         key: 'storeId',
@@ -136,6 +133,24 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         render: (_, record) => {
           const { setPaidToSellerOrderState } = this;
           const { id, state, internationalBillingInfo, russiaBillingInfo } = record;
+          const orderDataSource = addIndex(map)((item, idx) => {
+            return {
+              key: toString(idx),
+              // @ts-ignore: Unreachable code error
+              detailLabel: item[0],
+              // @ts-ignore: Unreachable code error
+              detailValue: item[1],
+            };
+          }, toPairs(pick([
+            'orderSlug',
+            'orderCreatedAt',
+            'storeId',
+            'totalAmount',
+            'cashbackAmount',
+            'sellerCurrency',
+            'feeAmount',
+            'feeCurrency',
+          ], record)));
 
           return (
             <Checkbox
@@ -163,23 +178,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
                                 dataIndex: 'detailValue',
                               },
                             ]}
-                            dataSource={addIndex(map)((item, idx) => {
-                              return {
-                                key: toString(idx),
-                                // @ts-ignore: Unreachable code error
-                                detailLabel: item[0],
-                                // @ts-ignore: Unreachable code error
-                                detailValue: item[1],
-                              };
-                            }, toPairs(pick([
-                              'orderSlug',
-                              'storeId',
-                              'totalAmount',
-                              'cashbackAmount',
-                              'sellerCurrency',
-                              'feeAmount',
-                              'feeCurrency',
-                            ], record)))}
+                            dataSource={orderDataSource}
                             rowKey="id"
                             pagination={false}
                           />
@@ -214,7 +213,54 @@ class FinancialManager extends React.Component<PropsType, StateType> {
                         </React.Fragment>
                       )}
                       {russiaBillingInfo && (
-                        <div>RBI</div>
+                        <React.Fragment>
+                          <Table
+                            size="small"
+                            columns={[
+                              {
+                                key: 'detailLabel',
+                                title: <Tag>Order info</Tag>,
+                                dataIndex: 'detailLabel',
+                              },
+                              {
+                                key: 'detailValue',
+                                title: '',
+                                dataIndex: 'detailValue',
+                              },
+                            ]}
+                            dataSource={orderDataSource}
+                            rowKey="id"
+                            pagination={false}
+                          />
+                          <br />
+                          <Table
+                            size="small"
+                            columns={[
+                              {
+                                key: 'detailLabel',
+                                title: <Tag>Billing info</Tag>,
+                                dataIndex: 'detailLabel',
+                              },
+                              {
+                                key: 'detailValue',
+                                title: '',
+                                dataIndex: 'detailValue',
+                              },
+                            ]}
+                            dataSource={addIndex(map)((item, idx) => {
+                              return {
+                                key: toString(idx),
+                                // @ts-ignore: Unreachable code error
+                                detailLabel: item[0],
+                                // @ts-ignore: Unreachable code error
+                                detailValue: item[1],
+                              };
+                              // @ts-ignore: Unreachable code error
+                            }, toPairs(russiaBillingInfo))}
+                            rowKey="id"
+                            pagination={false}
+                          />
+                        </React.Fragment>
                       )}
                     </div>
                   ),
@@ -273,7 +319,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
       });
   };
 
-  prepareDataSource = (data: FinancialManagerQuery): IStore[] => {
+  prepareDataSource = (data: FinancialManagerQuery): IFinancialManager[] => {
     const edges =
       (data.me &&
         data.me.financialManager.orders &&
@@ -294,7 +340,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         internationalBillingInfo: node.internationalBillingInfo,
         russiaBillingInfo: node.russiaBillingInfo,
         orderSlug: node.order ? node.order.slug : null,
-        orderCreatedAt: node.order ? node.order.createdAt : null,
+        orderCreatedAt: node.order ? node.order.createdAt : '',
       };
     }, edges);
   };
@@ -386,8 +432,8 @@ class FinancialManager extends React.Component<PropsType, StateType> {
           rowKey={record => `${record.id}`}
           pagination={false}
           rowClassName={() => styles.row}
-          expandedRowRender={(store: IStore) => {
-            const { internationalBillingInfo, russiaBillingInfo } = store;
+          expandedRowRender={(data: IFinancialManager) => {
+            const { internationalBillingInfo, russiaBillingInfo } = data;
             if (internationalBillingInfo) {
               return (
                 <Subtable

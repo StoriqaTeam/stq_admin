@@ -8,7 +8,7 @@ import {
     as FinancialManagerQueryInternationalBillingInfo,
 } from './__generated__/FinancialManagerQuery';
 
-export interface IStore {
+export interface IFinancialManager {
   id: string;
   sellerCurrency: Currency;
   totalAmount: number;
@@ -21,10 +21,10 @@ export interface IStore {
   internationalBillingInfo: FinancialManagerQueryInternationalBillingInfo | null;
   russiaBillingInfo: FinancialManagerQueryRussianBillingInfo | null;
   orderSlug: number | null;
-  orderCreatedAt: string | null;
+  orderCreatedAt: string | number | Date;
 }
 
-class FinancialManagerTable extends Table<IStore> {
+class FinancialManagerTable extends Table<IFinancialManager> {
   //
 }
 
