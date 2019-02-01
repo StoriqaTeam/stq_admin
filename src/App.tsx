@@ -6,7 +6,7 @@ import { HttpLink } from 'apollo-link-http';
 import { ApolloLink, from } from 'apollo-link';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { onError } from 'apollo-link-error';
-import { find, where, pathEq, omit } from 'ramda';
+import { find, where, pathEq, omit, path, filter, propEq } from 'ramda';
 
 const httpLink = new HttpLink({
   uri: process.env.GRAPHQL_URL,
@@ -31,12 +31,9 @@ const refreshTokenMiddleware = new ApolloLink((operation, forward) => {
 
 // @ts-ignore
 const logoutLink = onError(({ graphQLErrors, operation, forward }) => {
-  const isTokenExpired =
-    find(where(pathEq(['data', 'code'], 111)), graphQLErrors || []) != null;
-  const isTokenRevoked =
-    find(where(pathEq(['data', 'code'], 112)), graphQLErrors || []) != null;
+  const isTokenExpired = find(pathEq(['data', 'code'], 111))(graphQLErrors || []) != null;
+  const isTokenRevoked = find(pathEq(['data', 'code'], 112))(graphQLErrors || []) != null;
   if (isTokenExpired || isTokenRevoked) {
-    console.log('isTokenExpired');
     localStorage.removeItem('jwt');
     const oldHeaders = operation.getContext().headers;
     operation.setContext({

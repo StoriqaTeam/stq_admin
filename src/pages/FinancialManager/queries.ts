@@ -88,7 +88,21 @@ const SET_PAID_TO_SELLER_ORDER_STATE_MUTATION = gql`
   }
 `;
 
+const CHARGE_FEE_MUTATION = gql`
+  mutation ChargeFee($input: ChargeFeeInput!) {
+    ChargeFee(input: $input) {
+      id
+      orderId
+      amount
+      status
+      currency
+      chargeId
+    }
+  }
+`;
+
 export {
   FINANCIAL_MANAGER_QUERY,
   SET_PAID_TO_SELLER_ORDER_STATE_MUTATION,
+  CHARGE_FEE_MUTATION,
 };

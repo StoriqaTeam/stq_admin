@@ -1,6 +1,6 @@
 import { Table } from 'antd';
 
-import { Currency, PaymentState } from '../../../__generated__/globalTypes';
+import { Currency, PaymentState, FeeStatus } from '../../../__generated__/globalTypes';
 import {
   FinancialManagerQuery_me_financialManager_orders_edges_node_russiaBillingInfo
     as FinancialManagerQueryRussianBillingInfo,
@@ -18,6 +18,7 @@ export interface IFinancialManager {
   state: PaymentState;
   feeAmount: number | null;
   feeCurrency: Currency | null;
+  feeStatus: FeeStatus | null;
   internationalBillingInfo: FinancialManagerQueryInternationalBillingInfo | null;
   russiaBillingInfo: FinancialManagerQueryRussianBillingInfo | null;
   orderSlug: number | null;
