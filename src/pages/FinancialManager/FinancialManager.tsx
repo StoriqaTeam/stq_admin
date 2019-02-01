@@ -33,15 +33,21 @@ import {
 } from './__generated__/FinancialManagerQuery';
 import {
   PaymentState,
+  FeeStatus,
   OrderBillingSearchInput,
 } from '../../../__generated__/globalTypes';
-import { FINANCIAL_MANAGER_QUERY, SET_PAID_TO_SELLER_ORDER_STATE_MUTATION } from './queries';
+import { FINANCIAL_MANAGER_QUERY, SET_PAID_TO_SELLER_ORDER_STATE_MUTATION, CHARGE_FEE_MUTATION } from './queries';
 import FilterForm, { PaymentStateFilter } from './FilterForm';
 import * as styles from './FinancialManager.scss';
 import {
   SetPaidToSellerOrderState,
   SetPaidToSellerOrderStateVariables,
 } from './__generated__/SetPaidToSellerOrderState';
+
+import {
+  ChargeFee,
+  ChargeFeeVariables,
+} from './__generated__/ChargeFee';
 
 interface PropsType extends RouteComponentProps {
   client: ApolloClient<any>;
@@ -98,7 +104,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
       },
       {
         key: 'state',
-        title: 'State',
+        title: 'Order billing status',
         dataIndex: 'state',
       },
       {
@@ -117,14 +123,15 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         dataIndex: 'sellerCurrency',
       },
       {
-        key: 'feeAmount',
-        title: 'Fee amount',
-        dataIndex: 'feeAmount',
+        key: 'fee',
+        title: 'Fee',
+        dataIndex: 'fee',
+        render: (_, record) => (`${record.feeAmount || ''} ${record.feeCurrency || ''}`),
       },
       {
-        key: 'feeCurrency',
-        title: 'Fee currency',
-        dataIndex: 'feeCurrency',
+        key: 'feeStatus',
+        title: 'Fee status',
+        dataIndex: 'feeStatus',
       },
       {
         key: 'paidToSeller',
@@ -279,6 +286,38 @@ class FinancialManager extends React.Component<PropsType, StateType> {
           );
         },
       },
+      {
+        key: 'paidFee',
+        title: 'Paid fee',
+        dataIndex: 'feeStatus',
+        render: (_, record) => {
+          const { feeStatus, id, state } = record;
+          const { chargeFee } = this;
+          return (
+            <Checkbox
+              checked={feeStatus === 'PAID'}
+              disabled={!feeStatus || feeStatus === 'PAID' || state === 'INITIAL' || state === 'DECLINED'}
+              onChange={() => {
+                Modal.confirm({
+                  title: 'Are you sure paid fee?',
+                  content: (
+                    <div>{`${record.feeAmount} ${record.feeCurrency}`}</div>
+                  ),
+                  okText: 'Yes',
+                  okType: 'danger',
+                  cancelText: 'No',
+                  onOk() {
+                    chargeFee(id);
+                  },
+                  onCancel() {
+                    //
+                  },
+                });
+              }}
+            />
+          );
+        },
+      },
     ];
   }
 
@@ -337,6 +376,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         state: node.state,
         feeAmount: node.fee ? node.fee.amount : null,
         feeCurrency: node.fee ? node.fee.currency : null,
+        feeStatus: node.fee ? node.fee.status : null,
         internationalBillingInfo: node.internationalBillingInfo,
         russiaBillingInfo: node.russiaBillingInfo,
         orderSlug: node.order ? node.order.slug : null,
@@ -371,11 +411,45 @@ class FinancialManager extends React.Component<PropsType, StateType> {
       });
   };
 
+  chargeFee = (id: string) => {
+    this.setState({ isLoading: true });
+
+    this.props.client
+      .mutate<ChargeFee, ChargeFeeVariables>({
+        mutation: CHARGE_FEE_MUTATION,
+        variables: {
+          input: {
+            clientMutationId: '',
+            orderId: id,
+          },
+        },
+      })
+      .then(({ data }) => {
+        if (data && data.ChargeFee && data.ChargeFee.orderId) {
+          this.updateFeeStatus(id, FeeStatus.PAID);
+        }
+      })
+      .catch((error: ApolloError) => {
+        message.error(error.message);
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
+  };
+
   updateStatus = (id: string, status: PaymentState) => {
     const idx = findIndex(whereEq({ id: id }), this.state.dataSource);
     const lens = lensPath([idx]);
     this.setState(prevState => ({
       dataSource: over(lens, assoc('state', status), prevState.dataSource),
+    }));
+  };
+
+  updateFeeStatus = (id: string, status: FeeStatus) => {
+    const idx = findIndex(whereEq({ id: id }), this.state.dataSource);
+    const lens = lensPath([idx]);
+    this.setState(prevState => ({
+      dataSource: over(lens, assoc('feeStatus', status), prevState.dataSource),
     }));
   };
 
