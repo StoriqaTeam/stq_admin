@@ -111,22 +111,29 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         key: 'totalAmount',
         title: 'Total amount',
         dataIndex: 'totalAmount',
+        render: (_, record) => (`${record.totalAmount} ${record.sellerCurrency}`),
       },
       {
         key: 'cashbackAmount',
         title: 'Cashback amount',
         dataIndex: 'cashbackAmount',
+        render: (_, record) => (record.cashbackAmount
+          ? `${record.cashbackAmount || 0} ${record.sellerCurrency || ''}`
+          : '-'),
       },
       {
-        key: 'sellerCurrency',
-        title: 'Seller currency',
-        dataIndex: 'sellerCurrency',
+        key: 'storiqaFee',
+        title: 'Storiqa fee',
+        dataIndex: 'storiqaFee',
+        render: (_, record) => (record.feeAmount
+          ? `${parseFloat((record.feeAmount || 0).toFixed(8))} ${record.feeCurrency || ''}`
+          : '-'),
       },
       {
-        key: 'fee',
-        title: 'Fee',
-        dataIndex: 'fee',
-        render: (_, record) => (`${record.feeAmount || ''} ${record.feeCurrency || ''}`),
+        key: 'transactionFee',
+        title: 'Transaction fee',
+        dataIndex: 'transactionFee',
+        render: (_, record) => (record.stripeFee ? `${record.stripeFee} ${record.sellerCurrency}` : '-'),
       },
       {
         key: 'feeStatus',
@@ -381,6 +388,7 @@ class FinancialManager extends React.Component<PropsType, StateType> {
         russiaBillingInfo: node.russiaBillingInfo,
         orderSlug: node.order ? node.order.slug : null,
         orderCreatedAt: node.order ? node.order.createdAt : '',
+        stripeFee: node.stripeFee,
       };
     }, edges);
   };
