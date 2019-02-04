@@ -23,6 +23,7 @@ export interface IFinancialManager {
   russiaBillingInfo: FinancialManagerQueryRussianBillingInfo | null;
   orderSlug: number | null;
   orderCreatedAt: string | number | Date;
+  stripeFee: number | null;
 }
 
 class FinancialManagerTable extends Table<IFinancialManager> {

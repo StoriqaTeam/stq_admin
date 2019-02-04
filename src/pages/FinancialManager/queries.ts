@@ -42,6 +42,7 @@ const FINANCIAL_MANAGER_QUERY = gql`
                 currency
                 chargeId
               }
+              stripeFee
               store {
                 name {
                   lang
