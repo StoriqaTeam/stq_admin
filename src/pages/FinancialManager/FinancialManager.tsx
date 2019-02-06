@@ -176,105 +176,85 @@ class FinancialManager extends React.Component<PropsType, StateType> {
                   title: 'Are you sure paid to seller?',
                   content: (
                     <div>
+                      <Table
+                        size="small"
+                        columns={[
+                          {
+                            key: 'detailLabel',
+                            title: <Tag>Order info</Tag>,
+                            dataIndex: 'detailLabel',
+                          },
+                          {
+                            key: 'detailValue',
+                            title: '',
+                            dataIndex: 'detailValue',
+                          },
+                        ]}
+                        dataSource={orderDataSource}
+                        rowKey="id"
+                        pagination={false}
+                      />
+                      <br />
+                      {!internationalBillingInfo && !russiaBillingInfo && (
+                        <div>No billing info</div>
+                      )}
                       {internationalBillingInfo && (
-                        <React.Fragment>
-                          <Table
-                            size="small"
-                            columns={[
-                              {
-                                key: 'detailLabel',
-                                title: <Tag>Order info</Tag>,
-                                dataIndex: 'detailLabel',
-                              },
-                              {
-                                key: 'detailValue',
-                                title: '',
-                                dataIndex: 'detailValue',
-                              },
-                            ]}
-                            dataSource={orderDataSource}
-                            rowKey="id"
-                            pagination={false}
-                          />
-                          <br />
-                          <Table
-                            size="small"
-                            columns={[
-                              {
-                                key: 'detailLabel',
-                                title: <Tag>Billing info</Tag>,
-                                dataIndex: 'detailLabel',
-                              },
-                              {
-                                key: 'detailValue',
-                                title: '',
-                                dataIndex: 'detailValue',
-                              },
-                            ]}
-                            dataSource={addIndex(map)((item, idx) => {
-                              return {
-                                key: toString(idx),
-                                // @ts-ignore: Unreachable code error
-                                detailLabel: item[0],
-                                // @ts-ignore: Unreachable code error
-                                detailValue: item[1],
-                              };
+                        <Table
+                          size="small"
+                          columns={[
+                            {
+                              key: 'detailLabel',
+                              title: <Tag>Billing info</Tag>,
+                              dataIndex: 'detailLabel',
+                            },
+                            {
+                              key: 'detailValue',
+                              title: '',
+                              dataIndex: 'detailValue',
+                            },
+                          ]}
+                          dataSource={addIndex(map)((item, idx) => {
+                            return {
+                              key: toString(idx),
                               // @ts-ignore: Unreachable code error
-                            }, toPairs(internationalBillingInfo))}
-                            rowKey="id"
-                            pagination={false}
-                          />
-                        </React.Fragment>
+                              detailLabel: item[0],
+                              // @ts-ignore: Unreachable code error
+                              detailValue: item[1],
+                            };
+                            // @ts-ignore: Unreachable code error
+                          }, toPairs(internationalBillingInfo))}
+                          rowKey="id"
+                          pagination={false}
+                        />
                       )}
                       {russiaBillingInfo && (
-                        <React.Fragment>
-                          <Table
-                            size="small"
-                            columns={[
-                              {
-                                key: 'detailLabel',
-                                title: <Tag>Order info</Tag>,
-                                dataIndex: 'detailLabel',
-                              },
-                              {
-                                key: 'detailValue',
-                                title: '',
-                                dataIndex: 'detailValue',
-                              },
-                            ]}
-                            dataSource={orderDataSource}
-                            rowKey="id"
-                            pagination={false}
-                          />
-                          <br />
-                          <Table
-                            size="small"
-                            columns={[
-                              {
-                                key: 'detailLabel',
-                                title: <Tag>Billing info</Tag>,
-                                dataIndex: 'detailLabel',
-                              },
-                              {
-                                key: 'detailValue',
-                                title: '',
-                                dataIndex: 'detailValue',
-                              },
-                            ]}
-                            dataSource={addIndex(map)((item, idx) => {
-                              return {
-                                key: toString(idx),
-                                // @ts-ignore: Unreachable code error
-                                detailLabel: item[0],
-                                // @ts-ignore: Unreachable code error
-                                detailValue: item[1],
-                              };
+                        <Table
+                          size="small"
+                          columns={[
+                            {
+                              key: 'detailLabel',
+                              title: <Tag>Billing info</Tag>,
+                              dataIndex: 'detailLabel',
+                            },
+                            {
+                              key: 'detailValue',
+                              title: '',
+                              dataIndex: 'detailValue',
+                            },
+                          ]}
+                          dataSource={addIndex(map)((item, idx) => {
+                            return {
+                              key: toString(idx),
                               // @ts-ignore: Unreachable code error
-                            }, toPairs(russiaBillingInfo))}
-                            rowKey="id"
-                            pagination={false}
-                          />
-                        </React.Fragment>
+                              detailLabel: item[0],
+                              // @ts-ignore: Unreachable code error
+                              detailValue: item[1],
+                            };
+                            // @ts-ignore: Unreachable code error
+                          }, toPairs(russiaBillingInfo))}
+                          rowKey="id"
+                          pagination={false}
+                        />
                       )}
                     </div>
                   ),
