@@ -93,7 +93,7 @@ class AppLayout extends React.PureComponent<PropsType, StateType> {
               to="/financial-manager"
               data-test="menu-financial-manager"
             >
-              Financial Meneger
+              Finances
             </Link>
           </Menu.Item>
         </Menu>
