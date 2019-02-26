@@ -19,6 +19,7 @@ export interface IGood {
   isActive: boolean;
   rating: number;
   variants: IVariant[];
+  storeRawId: number | null;
 }
 
 class GoodsTable extends Table<IGood> {

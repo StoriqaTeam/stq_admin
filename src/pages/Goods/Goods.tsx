@@ -77,6 +77,20 @@ class Goods extends React.Component<PropsType, StateType> {
         title: 'Name',
       },
       {
+        key: 'edit',
+        title: 'Edit',
+        dataIndex: 'edit',
+        width: 50,
+        render: (_, record) => (
+          <a
+            href={`${process.env.PRODUCT_URL}/manage/store/${record.storeRawId}/products/${record.rawId}`}
+            target="_blank"
+          >
+            <Icon type="right-square" />
+          </a>
+        ),
+      },
+      {
         key: 'status',
         dataIndex: 'status',
         title: 'Status',
@@ -188,7 +202,6 @@ class Goods extends React.Component<PropsType, StateType> {
   };
 
   updateStatusForRecord = (id: number, status: Status) => {
-    console.log({ id, status });
     const idx = findIndex(whereEq({ rawId: id }), this.state.dataSource);
     const statusLens = lensIndex(idx);
     this.setState(prevState => ({
@@ -241,6 +254,7 @@ class Goods extends React.Component<PropsType, StateType> {
           }),
           (edge.node.variants && edge.node.variants.all) || [],
         ),
+        storeRawId: edge.node.store ? edge.node.store.rawId : null,
       }),
       baseProducts,
     );
@@ -335,31 +349,43 @@ class Goods extends React.Component<PropsType, StateType> {
           rowKey="id"
           pagination={false}
           rowClassName={() => styles.row}
-          expandedRowRender={(record: IGood) => (
-            <Subtable
-              columns={[
-                {
-                  key: 'id',
-                  title: 'ID',
-                  dataIndex: 'id',
-                },
-                {
-                  key: 'characteristics',
-                  title: 'Characteristics',
-                  dataIndex: 'characteristics',
-                  render: (_, rec) => join(';', rec.characteristics),
-                },
-                {
-                  key: 'price',
-                  title: 'Price',
-                  dataIndex: 'price',
-                },
-              ]}
-              dataSource={record.variants}
-              rowKey="id"
-              pagination={false}
-            />
-          )}
+          expandedRowRender={(record: IGood) => {
+            return (
+              <Subtable
+                columns={[
+                  {
+                    key: 'id',
+                    title: 'ID',
+                    dataIndex: 'id',
+                    render: (_, rec) => (
+                      <a
+                        href={`${
+                          process.env.PRODUCT_URL
+                          }/store/${record.storeRawId}/products/${record.rawId}/variant/${rec.id}`}
+                        target="_blank"
+                      >
+                        {rec.id}
+                      </a>
+                    ),
+                  },
+                  {
+                    key: 'characteristics',
+                    title: 'Characteristics',
+                    dataIndex: 'characteristics',
+                    render: (_, rec) => join(';', rec.characteristics),
+                  },
+                  {
+                    key: 'price',
+                    title: 'Price',
+                    dataIndex: 'price',
+                  },
+                ]}
+                dataSource={record.variants}
+                rowKey="id"
+                pagination={false}
+              />
+            );
+          }}
         />
       </Spin>
     );
