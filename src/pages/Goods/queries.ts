@@ -60,6 +60,9 @@ const GOODS_BY_STORE_ID_QUERY = gql`
                 }
               }
             }
+            store(visibility: "active") {
+              rawId
+            }
           }
         }
       }

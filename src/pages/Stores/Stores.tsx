@@ -94,6 +94,20 @@ class Stores extends React.Component<PropsType, StateType> {
         ),
       },
       {
+        key: 'edit',
+        title: 'Edit',
+        dataIndex: 'edit',
+        width: 50,
+        render: (_, record) => (
+          <a
+            href={`${process.env.PRODUCT_URL}/manage/store/${record.id}`}
+            target="_blank"
+          >
+            <Icon type="right-square" />
+          </a>
+        ),
+      },
+      {
         key: 'ownerEmail',
         title: 'Email',
         dataIndex: 'ownerEmail',
@@ -257,13 +271,13 @@ class Stores extends React.Component<PropsType, StateType> {
           ['setModerationStatusStore', 'rawId'],
           data,
         );
-        const status: Status | null = pathOr(
+        const receivedStatus: Status | null = pathOr(
           null,
           ['setModerationStatusStore', 'status'],
           data,
         );
-        if (rawId && status) {
-          this.updateStatusForStoreInDS(rawId, status);
+        if (rawId && receivedStatus) {
+          this.updateStatusForStoreInDS(rawId, receivedStatus);
         }
       })
       .catch((error: ApolloError) => {
