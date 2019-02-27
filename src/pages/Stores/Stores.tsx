@@ -150,12 +150,8 @@ class Stores extends React.Component<PropsType, StateType> {
               </Menu>
             }
           >
-            <Button>
-              {record.status}{' '}
-              <Icon
-                type="down"
-                data-test={`stores-table-row-${record.name}-status`}
-              />
+            <Button data-test={`stores-table-row-${record.name}-status`}>
+              {record.status} <Icon type="down" />
             </Button>
           </Dropdown>
         ),
