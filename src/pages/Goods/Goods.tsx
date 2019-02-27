@@ -121,7 +121,7 @@ class Goods extends React.Component<PropsType, StateType> {
               </Menu>
             }
           >
-            <Button>
+            <Button data-test={`goods-table-row-${record.name}-status`}>
               {record.status} <Icon type="down" />
             </Button>
           </Dropdown>

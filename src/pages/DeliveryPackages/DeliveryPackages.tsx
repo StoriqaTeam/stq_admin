@@ -59,6 +59,7 @@ class DeliveryPackages extends React.Component<PropsType, StateType> {
               `/delivery/companies/${this.props.companyId}/packages/new`,
             );
           }}
+          data-test="create-delivery-package-button"
         >
           Create package
         </Button>

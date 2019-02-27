@@ -101,6 +101,7 @@ class DeliveryCompanies extends React.Component<PropsType, StateType> {
             onClick={() => {
               this.props.history.push('/delivery/companies/new');
             }}
+            data-test="add-delivery-company-button"
           >
             Add new
           </Button>

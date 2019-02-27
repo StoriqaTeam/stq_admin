@@ -146,6 +146,7 @@ class CommonForm extends React.Component<PropsType, StateType> {
                 onClick={() => {
                   this.setState({ isCountryPickerShown: true });
                 }}
+                data-test="choose-countries-button"
               >
                 Choose
               </Button>
@@ -179,7 +180,11 @@ class CommonForm extends React.Component<PropsType, StateType> {
             )}
           </Form.Item>
           <Form.Item className={styles.submitButtonWrapper}>
-            <Button type="default" htmlType="submit">
+            <Button
+              type="default"
+              htmlType="submit"
+              data-test="apply-delivery-company-button"
+            >
               Apply
             </Button>
           </Form.Item>
