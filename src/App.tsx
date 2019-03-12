@@ -16,7 +16,7 @@ import Entry from './components/Entry';
 import Login from './pages/Login';
 
 const refreshTokenMiddleware = new ApolloLink((operation, forward) => {
-  console.log(JSON.stringify(operation, null, 2));
+  // console.log(JSON.stringify(operation, null, 2));
 
   operation.setContext({
     headers: {

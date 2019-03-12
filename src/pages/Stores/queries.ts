@@ -28,6 +28,14 @@ const STORES_LIST_QUERY = gql`
                 text
               }
               status
+              storeSubscription {
+                id
+                currency
+                walletAddress
+                trialStartDate
+                trialEndDate
+                status
+              }
               productsCount
               storeManager {
                 id
@@ -70,4 +78,13 @@ const SET_MODERATION_STATUS_FOR_STORE_MUTATION = gql`
   }
 `;
 
-export { STORES_LIST_QUERY, SET_MODERATION_STATUS_FOR_STORE_MUTATION };
+const UPDATE_STORE_SUBSCRIPTION_MUTATION = gql`
+  mutation UpdateStoreSubscription($input: UpdateStoreSubscriptionInput!) {
+    updateStoreSubscription(input: $input) {
+      id
+      status
+    }
+  }
+`;
+
+export { STORES_LIST_QUERY, SET_MODERATION_STATUS_FOR_STORE_MUTATION, UPDATE_STORE_SUBSCRIPTION_MUTATION };

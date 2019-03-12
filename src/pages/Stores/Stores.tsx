@@ -33,12 +33,18 @@ import {
   SetStoreModerationStatusVariables,
 } from './__generated__/SetStoreModerationStatus';
 import {
+  UpdateStoreSubscription,
+  UpdateStoreSubscriptionVariables,
+} from './__generated__/UpdateStoreSubscription';
+import {
   Status,
   SearchModeratorStoreInput,
+  SubscriptionPaymentStatus,
 } from '../../../__generated__/globalTypes';
 import {
   STORES_LIST_QUERY,
   SET_MODERATION_STATUS_FOR_STORE_MUTATION,
+  UPDATE_STORE_SUBSCRIPTION_MUTATION,
 } from './queries';
 import FilterForm, { StatusFilter } from './FilterForm';
 import * as styles from './Stores.scss';
@@ -140,7 +146,7 @@ class Stores extends React.Component<PropsType, StateType> {
                       key={item}
                       data-test={`stores-table-row-${
                         record.name
-                      }-status-${item}`}
+                        }-status-${item}`}
                     >
                       {item}
                     </Menu.Item>
@@ -152,6 +158,40 @@ class Stores extends React.Component<PropsType, StateType> {
           >
             <Button data-test={`stores-table-row-${record.name}-status`}>
               {record.status} <Icon type="down" />
+            </Button>
+          </Dropdown>
+        ),
+      },
+      {
+        key: 'subscribeStatus',
+        title: 'Subscribe status',
+        dataIndex: 'subscribeStatus',
+        render: (_, record) => (
+          <Dropdown
+            overlay={
+              <Menu
+                onClick={({ key }) => {
+                  this.updateStoreSubscription(record.id, key as SubscriptionPaymentStatus);
+                }}
+              >
+                {map(
+                  item => (
+                    <Menu.Item
+                      key={item}
+                      data-test={`stores-table-row-${
+                        record.name
+                        }-subscribe-status-${item}`}
+                    >
+                      {item}
+                    </Menu.Item>
+                  ),
+                  Object.keys(SubscriptionPaymentStatus),
+                )}
+              </Menu>
+            }
+          >
+            <Button data-test={`stores-table-row-${record.name}-subscribe-status`}>
+              {record.subscribeStatus} <Icon type="down" />
             </Button>
           </Dropdown>
         ),
@@ -237,6 +277,11 @@ class Stores extends React.Component<PropsType, StateType> {
         id: node.rawId,
         name: pathOr('', [0, 'text'], node.name),
         status: node.status,
+        subscribeCurrency: node.storeSubscription ? node.storeSubscription.currency : null,
+        walletAddress: node.storeSubscription ? node.storeSubscription.walletAddress : null,
+        trialStartDate: node.storeSubscription ? node.storeSubscription.trialStartDate : null,
+        trialEndDate: node.storeSubscription ? node.storeSubscription.trialEndDate : null,
+        subscribeStatus: node.storeSubscription ? node.storeSubscription.status : null,
         createdAt: parse(node.createdAt),
         updatedAt: parse(node.updatedAt),
         ownerPhone: node.storeManager && node.storeManager.phone,
@@ -284,11 +329,51 @@ class Stores extends React.Component<PropsType, StateType> {
       });
   };
 
+  updateStoreSubscription = (id: number, status: SubscriptionPaymentStatus) => {
+    this.setState({ isLoading: true });
+
+    this.props.client
+      .mutate<UpdateStoreSubscription, UpdateStoreSubscriptionVariables>({
+        mutation: UPDATE_STORE_SUBSCRIPTION_MUTATION,
+        variables: {
+          input: {
+            clientMutationId: '',
+            storeId: id,
+            status,
+          },
+        },
+      })
+      .then(({ data }) => {
+        const subscribeStatus: SubscriptionPaymentStatus = pathOr(
+          null,
+          ['updateStoreSubscription', 'status'],
+          data,
+        );
+        if (subscribeStatus) {
+          this.updateSubscribeStatusForStoreInDS(id, subscribeStatus);
+        }
+      })
+      .catch((error: ApolloError) => {
+        message.error(error.message);
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
+  };
+
   updateStatusForStoreInDS = (id: number, status: Status) => {
     const idx = findIndex(whereEq({ id: id }), this.state.dataSource);
     const lens = lensPath([idx]);
     this.setState(prevState => ({
       dataSource: over(lens, assoc('status', status), prevState.dataSource),
+    }));
+  };
+
+  updateSubscribeStatusForStoreInDS = (id: number, status: SubscriptionPaymentStatus) => {
+    const idx = findIndex(whereEq({ id: id }), this.state.dataSource);
+    const lens = lensPath([idx]);
+    this.setState(prevState => ({
+      dataSource: over(lens, assoc('subscribeStatus', status), prevState.dataSource),
     }));
   };
 
