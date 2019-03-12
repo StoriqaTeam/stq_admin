@@ -1,6 +1,6 @@
 import { Table } from 'antd';
 
-import { Status } from '../../../__generated__/globalTypes';
+import { Status, SubscriptionPaymentStatus } from '../../../__generated__/globalTypes';
 
 export interface IStore {
   id: number;
@@ -16,6 +16,7 @@ export interface IStore {
   address: string | null;
   country: string | null;
   productsCount: number;
+  subscribeStatus: SubscriptionPaymentStatus | null;
 }
 
 class StoresTable extends Table<IStore> {
