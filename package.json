@@ -61,7 +61,7 @@
     "codegen": "yarn downloadSchema && yarn apollo codegen:generate --schema=schema.json --target=typescript --addTypename",
     "downloadSchema": "rm -f ./schema.json; yarn apollo-codegen introspect-schema ${GRAPHQL_URL-https://stage.stq.cloud/graphql} --output schema.json",
     "ci": "echo 'Implement this, pleaaaaase'",
-    "prod:check": "yarn build && docker build -t storiqateam/stq-admin . && docker run -it --rm -p 80:80 storiqateam/stq-admin"
+    "prod:check": "yarn build && docker build -t sansare/stq-admin . && docker run -it --rm -p 80:80 sansare/stq-admin"
   },
   "resolutions": {
     "graphql": "14.0.2"

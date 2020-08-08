@@ -53,7 +53,7 @@ pipeline:
       branch: master
   package:
     image: plugins/docker
-    repo: storiqateam/stq-admin
+    repo: sansare/stq-admin
     tags:
     - nightly_${DRONE_BRANCH//\//_}
     - nightly_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
@@ -68,7 +68,7 @@ pipeline:
     object: admin
     kind: deployment
     namespace: default
-    img_names: storiqateam/stq-admin
+    img_names: sansare/stq-admin
     img_cnts: admin
     img_tags: nightly_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
     secrets:
@@ -102,7 +102,7 @@ pipeline:
       environment: stable
   package:
     image: plugins/docker
-    repo: storiqateam/stq-admin
+    repo: sansare/stq-admin
     tags:
     - stable_${DRONE_BRANCH//\//_}
     - stable_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
@@ -117,7 +117,7 @@ pipeline:
     object: admin
     kind: deployment
     namespace: default
-    img_names: storiqateam/stq-admin
+    img_names: sansare/stq-admin
     img_cnts: admin
     img_tags: stable_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
     secrets:
@@ -150,7 +150,7 @@ pipeline:
       event: tag
   package:
     image: plugins/docker
-    repo: storiqateam/stq-admin
+    repo: sansare/stq-admin
     tags:
     - stage_${DRONE_BRANCH//\//_}
     - stage_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
@@ -164,7 +164,7 @@ pipeline:
     object: admin
     kind: deployment
     namespace: default
-    img_names: storiqateam/stq-admin
+    img_names: sansare/stq-admin
     img_cnts: admin
     img_tags: stage_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
     secrets:
@@ -197,7 +197,7 @@ pipeline:
       environment: production
   package:
     image: plugins/docker
-    repo: storiqateam/stq-admin
+    repo: sansare/stq-admin
     tags:
     - production_${DRONE_BRANCH//\//_}
     - production_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
@@ -212,7 +212,7 @@ pipeline:
     object: admin
     kind: deployment
     namespace: default
-    img_names: storiqateam/stq-admin
+    img_names: sansare/stq-admin
     img_cnts: admin
     img_tags: production_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
     secrets:
