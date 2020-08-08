@@ -64,7 +64,7 @@ pipeline:
       event: push
       branch: master
   deploy:
-    image: jackthestripper/drone_setimage
+    image: sansare/drone_k8s_rollout
     object: admin
     kind: deployment
     namespace: default
@@ -113,7 +113,7 @@ pipeline:
       event: deployment
       environment: stable
   deploy:
-    image: jackthestripper/drone_setimage
+    image: sansare/drone_k8s_rollout
     object: admin
     kind: deployment
     namespace: default
@@ -160,7 +160,7 @@ pipeline:
     when:
       event: tag
   deploy:
-    image: jackthestripper/drone_setimage
+    image: sansare/drone_k8s_rollout
     object: admin
     kind: deployment
     namespace: default
@@ -208,7 +208,7 @@ pipeline:
       event: deployment
       environment: production
   deploy:
-    image: jackthestripper/drone_setimage
+    image: sansare/drone_k8s_rollout
     object: admin
     kind: deployment
     namespace: default
