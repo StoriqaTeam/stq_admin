@@ -78,7 +78,7 @@ module.exports = (env, argv) => {
         'process.env.PUBLIC_PATH': JSON.stringify(env.appSubpath),
         'process.env.GRAPHQL_URL':
           JSON.stringify(env.endpoint) ||
-          JSON.stringify('https://nightly.stq.cloud/graphql'),
+          JSON.stringify('https://nightly.grame.cloud/graphql'),
         'process.env.PRODUCT_URL': JSON.stringify(env.productUrl),
       }),
       new ExtractTextPlugin({ filename: 'styles.css' }),

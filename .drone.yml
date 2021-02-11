@@ -1,280 +1,375 @@
-pipeline:
-  restore-cache:
-    image: plugins/s3-cache:1
+kind: pipeline
+type: kubernetes
+name: default
+
+platform:
+  os: linux
+  arch: arm64
+
+clone:
+  depth: 50
+
+steps:
+# restore s3 cache
+- name: restore-cache
+  image: plugins/s3-cache:1
+  settings:
     pull: true
-    secrets: [ aws_access_key_id, aws_secret_access_key ]
-    mount:
-    - node_modules
+    access_key: aws_access_key_id
+    secret_key: aws_secret_access_key
     restore: true
-
-###
-# Test PR
-###
-
-  update_pr:
-    image: plugins/git
-    commands:
-    - export BRANCH_SRC=origin/${DRONE_COMMIT_REFSPEC%%:*} BRANCH_DST=origin/${DRONE_BRANCH}
-    - cp -rpf .git .git.bak
-    - git config --global user.email "service@storiqa.com" && git config --global user.name "Storiqa Common"
-    - git fetch && git checkout $BRANCH_SRC && git merge --no-commit $BRANCH_DST
-    - rm -rf .git && mv -f .git.bak .git
-    when:
-      event: pull_request
-  test:
-    image: node:9.9
-    environment:
-    - RUN_MODE=k8s
-    environment:
-    - GRAPHQL_URL=https://stable.stq.cloud/graphql
-    - PRODUCT_URL=https://stable.stq.cloud
-    - APP_SUBPATH=/storiqatools
-    commands:
-    - yarn -s --no-progress --non-interactive --production=false
-    - yarn ci
-    when:
-      event: pull_request
-
-###
-# Build and deploy to nightly
-###
-
-  build:
-    image: node:9.9
-    environment:
-    - GRAPHQL_URL=https://nightly.stq.cloud/graphql
-    - PRODUCT_URL=https://nightly.stq.cloud
-    - APP_SUBPATH=/storiqatools
-    commands:
-    - yarn -s --no-progress --non-interactive --production=false
-    - yarn build
-    when:
-      event: push
-      branch: master
-  package:
-    image: plugins/docker
-    repo: sansare/stq-admin
-    tags:
-    - nightly_${DRONE_BRANCH//\//_}
-    - nightly_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - docker_username
-    - docker_password
-    when:
-      event: push
-      branch: master
-  deploy:
-    image: sansare/drone_k8s_rollout
-    object: admin
-    kind: deployment
-    namespace: default
-    img_names: sansare/stq-admin
-    img_cnts: admin
-    img_tags: nightly_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - source: k8s_nightly_ca
-      target: k8s_ca
-    - source: k8s_nightly_user
-      target: k8s_user
-    - source: k8s_nightly_token
-      target: k8s_token
-    - source: k8s_nightly_addr
-      target: k8s_addr
-    when:
-      branch: master
-      event: push
-
-###
-# Build and deploy to stable
-###
-
-  build:
-    image: node:9.9
-    environment:
-    - GRAPHQL_URL=https://stable.stq.cloud/graphql
-    - PRODUCT_URL=https://stable.stq.cloud
-    - APP_SUBPATH=/storiqatools
-    commands:
-    - yarn -s --no-progress --non-interactive --production=false
-    - yarn build
-    when:
-      event: deployment
-      environment: stable
-  package:
-    image: plugins/docker
-    repo: sansare/stq-admin
-    tags:
-    - stable_${DRONE_BRANCH//\//_}
-    - stable_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - docker_username
-    - docker_password
-    when:
-      event: deployment
-      environment: stable
-  deploy:
-    image: sansare/drone_k8s_rollout
-    object: admin
-    kind: deployment
-    namespace: default
-    img_names: sansare/stq-admin
-    img_cnts: admin
-    img_tags: stable_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - source: k8s_stable_ca
-      target: k8s_ca
-    - source: k8s_stable_user
-      target: k8s_user
-    - source: k8s_stable_token
-      target: k8s_token
-    - source: k8s_stable_addr
-      target: k8s_addr
-    when:
-      event: deployment
-      environment: stable
-
-###
-# Build and deploy to stage
-###
-
-  build:
-    image: node:9.9
-    environment:
-    - GRAPHQL_URL=https://stage.stq.cloud/graphql
-    - PRODUCT_URL=https://stage.stq.cloud
-    - APP_SUBPATH=/storiqatools
-    commands:
-    - yarn -s --no-progress --non-interactive --production=false
-    - yarn build
-    when:
-      event: tag
-  package:
-    image: plugins/docker
-    repo: sansare/stq-admin
-    tags:
-    - stage_${DRONE_BRANCH//\//_}
-    - stage_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - docker_username
-    - docker_password
-    when:
-      event: tag
-  deploy:
-    image: sansare/drone_k8s_rollout
-    object: admin
-    kind: deployment
-    namespace: default
-    img_names: sansare/stq-admin
-    img_cnts: admin
-    img_tags: stage_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - source: k8s_stage_ca
-      target: k8s_ca
-    - source: k8s_stage_user
-      target: k8s_user
-    - source: k8s_stage_token
-      target: k8s_token
-    - source: k8s_stage_addr
-      target: k8s_addr
-    when:
-      event: tag
-
-###
-# Build and deploy to production
-###
-
-  build:
-    image: node:9.9
-    environment:
-    - GRAPHQL_URL=https://storiqa.com/graphql
-    - PRODUCT_URL=https://storiqa.com
-    - APP_SUBPATH=/storiqatools
-    commands:
-    - yarn -s --no-progress --non-interactive --production=false
-    - yarn build
-    when:
-      event: deployment
-      environment: production
-  package:
-    image: plugins/docker
-    repo: sansare/stq-admin
-    tags:
-    - production_${DRONE_BRANCH//\//_}
-    - production_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - docker_username
-    - docker_password
-    when:
-      event: deployment
-      environment: production
-  deploy:
-    image: sansare/drone_k8s_rollout
-    object: admin
-    kind: deployment
-    namespace: default
-    img_names: sansare/stq-admin
-    img_cnts: admin
-    img_tags: production_${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
-    secrets:
-    - source: k8s_prod_ca
-      target: k8s_ca
-    - source: k8s_prod_user
-      target: k8s_user
-    - source: k8s_prod_token
-      target: k8s_token
-    - source: k8s_prod_addr
-      target: k8s_addr
-    when:
-      event: deployment
-      environment: production
-
-###
-# Notifications and post-deploy ops
-###
-
-  rebuild-cache:
-    group: package
-    image: plugins/s3-cache:1
-    pull: true
-    secrets: [ aws_access_key_id, aws_secret_access_key ]
     mount:
-    - node_modules
-    rebuild: true
-    when:
-      branch: master
-      event: push
-  slack:
-    image: plugins/slack
-    webhook: https://hooks.slack.com/services/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
-    channel: release
-    icon_url: https://drone.io/favicon.ico
-    username: cd.stq.cloud
-    template: >
-      {{#success build.status}}
-        {{repo.name}} has been released to stage.stq.cloud!
-      {{else}}
-        Failed to deploy {{repo.name}} to stage.stq.cloud! More details here {{build.link}}
-      {{/success}}
-    when:
-      event: tag
-      status:
-      - success
-      - failure
-  slack:
-    image: plugins/slack
-    webhook: https://hooks.slack.com/services/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
-    channel: release
-    icon_url: https://drone.io/favicon.ico
-    username: cd.stq.cloud
-    template: >
-      {{#success build.status}}
-        {{repo.name}} has been released to production.stq.cloud!
-      {{else}}
-        Failed to deploy {{repo.name}} to production.stq.cloud! More details here {{build.link}}
-      {{/success}}
-    when:
-      event: deployment
-      environment: production
-      status:
-      - success
-      - failure
+      - deps
+  when:
+    event:
+    - pull_request
+    - push
+    - tag
+
+# fetch  git sub-modules
+- name: submodules
+  image: alpine/git
+  commands:
+  - git submodule init
+  - git submodule update --recursive --remote
+
+# Test PR
+- name: test
+  image: rust:1.45-stretch
+  environment:
+    RUN_MODE: k8s
+    DATABASE_HOST: db-postgresql
+    DATABASE_URL: postgresql://users:users@db-postgresql/users
+    RUST_BACKTRACE: '1'
+    CARGO_HOME: deps
+    PGPASSWORD: a1a1a1a1
+  commands:
+  - rustup component add rustfmt-preview
+  - cargo fmt -- --check
+  - apt-get update && apt-get install -y ca-certificates wget gnupg2
+  - update-ca-certificates
+  - wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add -
+  - echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
+  - apt-get update && apt-get install -y libpq5 postgresql-client-10
+  - psql -U postgres -h db-postgresql -c "CREATE ROLE users WITH PASSWORD 'users' LOGIN REPLICATION" -c "CREATE DATABASE users OWNER users"
+  - psql -U postgres -h db-postgresql -d users -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"";
+  - mkdir -p /usr/local/cargo/bin || true
+  - wget -q https://s3.eu-central-1.amazonaws.com/dumpster.stq/diesel -O /usr/local/cargo/bin/diesel
+  - chmod +x /usr/local/cargo/bin/diesel
+  - diesel migration run
+  - cargo test
+  when:
+    event:
+    - pull_request
+
+# Build debug
+- name: build-debug
+  image: rust:1.45-stretch
+  environment:
+    CARGO_HOME: deps
+    RUSTFLAGS: -C opt-level=1 -C debuginfo=0
+  commands:
+  - apt-get update && apt-get install -y clang
+  - cargo build --locked
+  - mkdir migrations || true
+  when:
+    event: 
+      - push
+    branch: 
+      - master
+      
+# Build release
+- name: build-release
+  image: rust:1.45-stretch
+  environment:
+    CARGO_HOME: deps
+  commands:
+  - apt-get update && apt-get install -y clang
+  - cargo build --release --locked
+  - mkdir migrations || true
+  when:
+    event: 
+    - tag
+
+# publish debug image in gce registry
+- name: publish-debug
+  image: plugins/gcr
+  settings:
+    project: sansar-299400
+    registry: gcr.io
+    repo: sansar-299400/stq-users
+    tags:
+      - ${DRONE_BRANCH//\//_}
+      - ${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+    json_key:
+      from_secret: GOOGLE_CREDENTIALS
+  when:
+    event: 
+      - push
+    branch: 
+      - master
+
+# publish release image in gce registry
+- name: publish-release
+  image: plugins/gcr
+  settings:
+    project: sansar-299400
+    registry: gcr.io
+    repo: sansar-299400/stq-users
+    build_args:
+    - env=release
+    tag:
+    - '${DRONE_TAG}'
+    - latest
+    json_key:
+      from_secret: GOOGLE_CREDENTIALS
+  when:
+    event: 
+    - tag
+
+# # docker debug image in docker registry
+# - name: package-debug
+#   image: plugins/docker
+#   settings:
+#     repo: sansare/stq-users
+#     tag:
+#     - ${DRONE_BRANCH//\//_}
+#     - ${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+#     username: shivkushwaha
+#     password: password@28727
+#   when:
+#     branch: 
+#       - master
+#     event:
+#       - push
+
+# # docker release image in docker registry
+# - name: package-release
+#   image: plugins/docker
+#   settings:
+#     repo: sansare/stq-users
+#     build_args:
+#     - env=release
+#     tag:
+#     - '${DRONE_TAG}'
+#     - latest
+#     username: shivkushwaha
+#     password: password@28727
+
+# # deploy nightly
+# - name: deploy-nightly
+#   image: sansare/drone_k8s_rollout
+#   environment:
+#     namespace: default
+#     kind: deployment
+#     object: users
+#     img_names: sansare/stq-users
+#     img_tags: ${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+#     img_cnts: users
+#   settings:
+#     k8s_ca:
+#       from_secret: k8s_nightly_ca
+#     k8s_user:
+#       from_secret: k8s_nightly_user
+#     k8s_token:
+#       from_secret: k8s_nightly_token
+#     k8s_addr:
+#       from_secret: k8s_nightly_addr
+#   when:
+#     branch:
+#     - master
+#     event:
+#     - push
+
+# # deploy staging
+# - name: deploy-stage
+#   image: sansare/drone_k8s_rollout
+#   environment:
+#     namespace: default
+#     kind: deployment
+#     object: users
+#     img_names: sansare/stq-users
+#     img_tags: '${DRONE_TAG}'
+#     img_cnts: users
+#   settings:
+#     k8s_ca:
+#       from_secret: k8s_stage_ca
+#     k8s_user:
+#       from_secret: k8s_stage_user
+#     k8s_token:
+#       from_secret: k8s_stage_token
+#     k8s_addr:
+#       from_secret: k8s_stage_addr
+#   when:
+#     event:
+#     - tag
+
+# # deploy stable
+# - name: deploy-stable
+#   image: sansare/drone_k8s_rollout
+#   environment:
+#     namespace: default
+#     kind: deployment
+#     object: users
+#     img_names: sansare/stq-users
+#     img_tags: ${DRONE_BRANCH//\//_}${DRONE_PARENT_BUILD_NUMBER}
+#     img_cnts: users
+#   settings:
+#     k8s_ca:
+#       from_secret: k8s_stable_ca
+#     k8s_user:
+#       from_secret: k8s_stable_user
+#     k8s_token:
+#       from_secret: k8s_stable_token
+#     k8s_addr:
+#       from_secret: k8s_stable_addr
+#   when:
+#     event:
+#     - deployment
+#     environment:
+#     - stable
+
+# # deploy production
+# - name: deploy-production
+#   image: sansare/drone_k8s_rollout
+#   environment:
+#     namespace: default
+#     kind: deployment
+#     object: users
+#     img_names: sansare/stq-users
+#     img_tags: '${DRONE_TAG}'
+#     img_cnts: users
+#   settings:
+#     k8s_ca:
+#       from_secret: k8s_prod_ca
+#     k8s_user:
+#       from_secret: k8s_prod_user
+#     k8s_token:
+#       from_secret: k8s_prod_token
+#     k8s_addr:
+#       from_secret: k8s_prod_addr
+#   when:
+#     event:
+#     - deployment
+#     environment:
+#     - production
+
+
+# deploy-nightly
+- name: deploy-nightly
+  image: nytimes/drone-gke
+  environment:
+    TOKEN:
+      from_secret: GOOGLE_CREDENTIALS
+  settings:
+    cluster: sansar-cluster
+    expand_env_vars: true
+    template: k8s/k8s.yaml
+    namespace: default
+    skip_secret_template: true
+    zone: us-east1-c
+    vars:
+      app: users
+      stack: storiqa
+      db_url: postgresql://users:users@users-pg/users
+      rust_log: users=debug
+      image: gcr.io/sansar-299400/stq-users:${DRONE_BRANCH//\//_}${DRONE_BUILD_NUMBER}
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+# deploy stage
+- name: deploy-stage
+  image: nytimes/drone-gke
+  environment:
+    TOKEN:
+      from_secret: GOOGLE_CREDENTIALS
+  settings:
+    cluster: sansar-cluster
+    expand_env_vars: true
+    template: k8s/app.yaml
+    namespace: default
+    skip_secret_template: true
+    zone: us-east1-c
+    vars:
+      app: users
+      stack: storiqa
+      db_url: postgresql://users:users@users-pg/users
+      rust_log: users=debug
+      image: gcr.io/sansar-299400/stq-users:'${DRONE_TAG}'
+  when:
+    event:
+    - tag
+
+# deploy stable
+- name: deploy-stable
+  image: nytimes/drone-gke
+  environment:
+    TOKEN:
+      from_secret: GOOGLE_CREDENTIALS
+  settings:
+    cluster: sansar-cluster
+    expand_env_vars: true
+    template: k8s/app.yaml
+    namespace: default
+    skip_secret_template: true
+    zone: us-east1-c
+    vars:
+      app: users
+      stack: storiqa
+      db_url: postgresql://users:users@users-pg/users
+      rust_log: users=debug
+      image: gcr.io/sansar-299400/stq-users:${DRONE_BRANCH//\//_}${DRONE_PARENT_BUILD_NUMBER}
+  when:
+    target:
+    - stable
+
+# deploy production
+- name: deploy-production
+  image: nytimes/drone-gke
+  environment:
+    TOKEN:
+      from_secret: GOOGLE_CREDENTIALS
+  settings:
+    cluster: sansar-cluster
+    expand_env_vars: true
+    template: k8s/app.yaml
+    namespace: default
+    skip_secret_template: true
+    zone: us-east1-c
+    vars:
+      app: users
+      stack: storiqa
+      db_url: postgresql://users:users@users-pg/users
+      rust_log: users=debug
+      image: gcr.io/sansar-299400/stq-users:'${DRONE_TAG}'
+  when:
+    target:
+    - production
+
+# rebuild cache
+# - name: rebuild-cache
+#   image: plugins/s3-cache:1
+#   settings:
+#     pull: true
+#     access_key: aws_access_key_id
+#     secret_key: aws_secret_access_key
+#     rebuild: true
+#     mount:
+#       - deps
+#   when:
+#     branch:
+#     - master
+#     event:
+#     - push
+
+# Test services
+- name: db-postgresql
+  image: postgres:10-alpine
+  environment:
+    POSTGRES_PASSWORD: a1a1a1a1
+  when:
+    event:
+    - pull_request
