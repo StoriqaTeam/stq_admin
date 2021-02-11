@@ -53,7 +53,7 @@
     "typings-for-css-modules-loader": "1.7.0",
     "webpack": "4.19.1",
     "webpack-cli": "3.1.0",
-    "webpack-dev-server": "3.1.8"
+    "webpack-dev-server": "3.1.11"
   },
   "scripts": {
     "build": "yarn downloadSchema && yarn codegen && export NODE_ENV=production && rm -rf dist && yarn webpack --config ./config/webpack.config.js --env.production --env.endpoint=${GRAPHQL_URL-https://nightly.grame.cloud/graphql} --env.productUrl=${PRODUCT_URL-https://stage.stq.cloud} --env.appSubpath=${APP_SUBPATH-/}",
