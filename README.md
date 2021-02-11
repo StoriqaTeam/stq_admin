@@ -8,7 +8,7 @@ then open http://localhost:9000
 
 Use `GRAPHQL_URL` environment variable to set URL to fetch schema from. Default value is `https://nightly.grame.cloud/graphql`.
 
-The following command will fetch schema from stable.stq.cloud
+The following command will fetch schema from stable.grame.cloud
 
 `GRAPHQL_URL="https://stable.grame.cloud/graphql" yarn build`
 
